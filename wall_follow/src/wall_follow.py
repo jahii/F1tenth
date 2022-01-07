@@ -21,10 +21,10 @@ integral = 0.0
 #WALL FOLLOW PARAMS
 ANGLE_RANGE = 270 # Hokuyo 10LX has 270 degrees scan
 DESIRED_DISTANCE_RIGHT = 0.9 # meters
-DESIRED_DISTANCE_LEFT = 0.8
+DESIRED_DISTANCE_LEFT = 0.4
 VELOCITY = 1.00 # meters per second
 CAR_LENGTH = 0.50 # Traxxas Rally is 20 inches or 0.5 meters
-THETA = pi/10
+THETA = pi/8
 
 class WallFollow:
     """ Implement Wall Following on the car
@@ -92,7 +92,7 @@ class WallFollow:
         """ 
         """
         laser_data = data
-        angle = pi/5
+        #angle = pi/5
         
         
         error = self.followLeft(laser_data, DESIRED_DISTANCE_LEFT)
