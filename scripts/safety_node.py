@@ -7,10 +7,6 @@ from nav_msgs.msg import Odometry
 from ackermann_msgs.msg import AckermannDriveStamped
 from math import *
 
-# TODO: import ROS msg types and libraries
-
-
-
 class Safety(object):
     """
     The class that handles emergency braking.
