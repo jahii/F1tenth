@@ -37,7 +37,6 @@ class Safety(object):
     def odom_callback(self, odom_msg):
         self.odom = odom_msg
         # TODO: update current speed
-        
 
     def scan_callback(self, scan_msg):
         angle_min=scan_msg.angle_min
@@ -75,9 +74,6 @@ class Safety(object):
         self.pub_brake_bool.publish(brake_bool_msg)
         self.pub_brake.publish(brake_msg)
 
-
-        # TODO: publish brake message and publish controller bool
-        
 
 
 def main():
