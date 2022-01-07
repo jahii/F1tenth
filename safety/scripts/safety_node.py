@@ -49,13 +49,14 @@ class Safety(object):
         brake_bool_msg=Bool()
         brake_bool_msg.data=False
         
-        brake_msg=AckermannDriveStamped()
+        brake_msg=AckermannDriveStamped() #create brake_msg format
         brake_msg.drive.speed=self.speed
         
         # TODO: calculate TTC
         for i in range(len(ranges)):
             theta = angle_min + angle_increment * i
             if velocity != 0:
+                velocity = abs(velocity)
                 if -pi/10 < theta < pi/10:
                     TTC = ranges[i] / (velocity*cos(theta))
                     print(TTC)
