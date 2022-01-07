@@ -12,8 +12,8 @@ class Safety(object):
     The class that handles emergency braking.
     """
     def __init__(self):
-        rospy.Subscriber("odom", Odometry, self.odom_callback)
-        rospy.Subscriber("scan", LaserScan, self.scan_callback)
+        rospy.Subscriber("odom", Odometry, self.odom_callback) #receive 'odom' topic
+        rospy.Subscriber("scan", LaserScan, self.scan_callback) #receive 'scan' topic
         
         self.pub_brake_bool= rospy.Publisher("brake_bool", Bool, queue_size=10)
         self.pub_brake = rospy.Publisher("/brake", AckermannDriveStamped, queue_size=10)
