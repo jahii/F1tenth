@@ -56,6 +56,7 @@ class Safety(object):
         for i in range(len(ranges)):
             theta = angle_min + angle_increment * i
             if velocity != 0:
+                velocity = abs(velocity)
                 if -pi/10 < theta < pi/10:
                     TTC = ranges[i] / (velocity*cos(theta))
                     print(TTC)
