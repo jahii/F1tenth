@@ -49,7 +49,7 @@ class Safety(object):
         brake_bool_msg=Bool()
         brake_bool_msg.data=False
         
-        brake_msg=AckermannDriveStamped()
+        brake_msg=AckermannDriveStamped() #create brake_msg format
         brake_msg.drive.speed=self.speed
         
         # TODO: calculate TTC
