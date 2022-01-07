@@ -74,13 +74,7 @@ class Safety(object):
             
         self.pub_brake_bool.publish(brake_bool_msg)
         self.pub_brake.publish(brake_msg)
-        # print(angle_increment)
-        
-        
-        # rospy.loginfo("scan data : %f"%velocity)
 
-        
-        
 
         # TODO: publish brake message and publish controller bool
         
