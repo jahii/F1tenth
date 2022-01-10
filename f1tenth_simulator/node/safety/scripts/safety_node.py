@@ -16,8 +16,8 @@ class Safety(object):
         rospy.Subscriber("scan", LaserScan, self.scan_callback) #receive 'scan' topic
         
         self.pub_brake_bool= rospy.Publisher("brake_bool", Bool, queue_size=10)
-        self.pub_brake = rospy.Publisher("/brake", AckermannDriveStamped, queue_size=10)
-        self.threshold = 0.5
+        self.pub_brake = rospy.Publisher("brake", AckermannDriveStamped, queue_size=10)
+        self.threshold = 1.2
         
         """
         One publisher should publish to the /brake topic with a AckermannDriveStamped brake message.
@@ -60,16 +60,19 @@ class Safety(object):
                 velocity = abs(velocity)
                 if -pi/10 < theta < pi/10:
                     TTC = ranges[i] / (velocity*cos(theta))
-                    print(TTC)
+                    print("TTC of theta " + str(round(theta,3)) + " : " + str(round(TTC,3))+", distance : "+str(round(ranges[i],3)))
                     #print("theta : ", theta)
                     if TTC < self.threshold:
                         brake_bool_msg.data=True
+                        print('BRAKE!')
                         self.pub_brake_bool.publish(brake_bool_msg)
                         brake_bool_msg.data=False
                         
+                        break
+                        
                         # self.pub_brake_bool.publish(brake_bool_msg)
                         # self.pub_brake.publish(brake_msg)
-                        print(brake_bool_msg.data)
+                        
                         
                         
             

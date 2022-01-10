@@ -10,8 +10,8 @@ from sensor_msgs.msg import Image, LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped, AckermannDrive
 
 #PID CONTROL PARAMS
-kp = 14    #TODO
-kd = 0.09   #TODO
+kp = 10    #TODO
+kd = 0.5   #TODO
 ki = 0      #TODO
 servo_offset = 0.0
 prev_error = 0.0 
@@ -21,10 +21,10 @@ integral = 0.0
 #WALL FOLLOW PARAMS
 ANGLE_RANGE = 270 # Hokuyo 10LX has 270 degrees scan
 DESIRED_DISTANCE_RIGHT = 0.9 # meters
-DESIRED_DISTANCE_LEFT = 0.4
-VELOCITY = 1.00 # meters per second
+DESIRED_DISTANCE_LEFT = 0.7
+VELOCITY = 1.40 # meters per second
 CAR_LENGTH = 0.50 # Traxxas Rally is 20 inches or 0.5 meters
-THETA = pi/8
+THETA = pi/6
 
 class WallFollow:
     """ Implement Wall Following on the car
@@ -71,7 +71,7 @@ class WallFollow:
         drive_msg.drive.speed = velocity
         self.drive_pub.publish(drive_msg)
         
-        print(error)
+        
         prev_error = error
 
     def followLeft(self, data, leftDist):
