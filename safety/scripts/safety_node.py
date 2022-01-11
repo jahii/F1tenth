@@ -1,92 +1,66 @@
 #!/usr/bin/env python
 from re import S
-import rospy
-from std_msgs.msg import *
-from sensor_msgs.msg import LaserScan
-from nav_msgs.msg import Odometry
-from ackermann_msgs.msg import AckermannDriveStamped
-from math import *
+import rospy                                            # rospy is needed to writing ROS node 
+from std_msgs.msg import *                              # to publish message which type is std_msgs.msg/String
+from sensor_msgs.msg import LaserScan                   # to publish message which type is sensor_msgs.msg/LaserScam
+from nav_msgs.msg import Odometry                       # to publish message which type is nav_msgs.msg/Odometry
+from ackermann_msgs.msg import AckermannDriveStamped    # to publish message which type is ackermann_msg/AckermannderiveStamped
+from math import *                                      # math is needed to use calculation function and (pi,e)                             
 
-class Safety(object):
-    """
-    The class that handles emergency braking.
-    """
+class Safety(object): #The class that handles emergency braking.
+
     def __init__(self):
-        rospy.Subscriber("odom", Odometry, self.odom_callback) #receive 'odom' topic
+        
+        # node subscribes to the odom topic which is of type nav_msgs/Odometry. 
+        rospy.Subscriber("odom", Odometry, self.odom_callback) 
+        # node subscribes to the scan topic which is of type sensor_msgs/LaserScan. 
         rospy.Subscriber("scan", LaserScan, self.scan_callback) #receive 'scan' topic
         
+        # node is publishing to the brake_bool topic using the message type Bool
         self.pub_brake_bool= rospy.Publisher("brake_bool", Bool, queue_size=10)
+        # node is publishing to the /brake topic using the message type AckermannDrivestamped
         self.pub_brake = rospy.Publisher("/brake", AckermannDriveStamped, queue_size=10)
-        self.threshold = 0.5
         
-        """
-        One publisher should publish to the /brake topic with a AckermannDriveStamped brake message.
+        self.threshold = 0.3
+        self.breakspeed = 0
+        
 
-        One publisher should publish to the /brake_bool topic with a Bool message.
-
-        You should also subscribe to the /scan topic to get the LaserScan messages and
-        the /odom topic to get the current speed of the vehicle.
-
-        The subscribers should use the provided odom_callback and scan_callback as callback methods
-
-        NOTE that the x component of the linear velocity in odom is the speed
-        """
-        self.speed = 0
-        # TODO: create ROS subscribers and publishers.
 
     def odom_callback(self, odom_msg):
-        self.odom = odom_msg
-        # TODO: update current speed
-        
+        self.odom = odom_msg # receive odom_msg        
 
     def scan_callback(self, scan_msg):
-        angle_min=scan_msg.angle_min
-        angle_increment = scan_msg.angle_increment
         
-        ranges = scan_msg.ranges
-        velocity = self.odom.twist.twist.linear.x
+        self.scan=scan_msg   # receive scan_msg
+        
+        angle_min=scan_msg.angle_min                # Lidar minumum angle: -2.355rad
+        angle_increment = scan_msg.angle_increment  # Laser angle increment: 4.71/1080[rad], scan beams:1080
+        ranges = scan_msg.ranges                    # Distance between vehicle and obstacle
+        velocity = self.odom.twist.twist.linear.x   # vehicle velocity
        
-        brake_bool_msg=Bool()
-        brake_bool_msg.data=False
+        brake_bool_msg=Bool()                       # message which type is Bool
+        brake_bool_msg.data=False                   # update parameter 'data' in brake_bool_msg as False
         
-        brake_msg=AckermannDriveStamped()
-        brake_msg.drive.speed=self.speed
+        brake_msg=AckermannDriveStamped()           # message which type is AckermannDriveStamped
+        brake_msg.drive.speed=self.breakspeed       # update parameter 'speed' in brake_msg as 0
         
-        # TODO: calculate TTC
-        for i in range(len(ranges)):
-            theta = angle_min + angle_increment * i
+        
+        for i in range(len(ranges)):                # for every laser point
+            theta = angle_min + angle_increment * i # calculate theta based on angle_min(-2.355rad)
             
-            if velocity != 0:
-                velocity = abs(velocity)
-                if -pi/10 < theta < pi/10:
-                    TTC = ranges[i] / (velocity*cos(theta))
-                    print(TTC)
-                    #print("theta : ", theta)
-                    if TTC < self.threshold:
-                        brake_bool_msg.data=True
-                        self.pub_brake_bool.publish(brake_bool_msg)
-                        brake_bool_msg.data=False
-                        
-                        # self.pub_brake_bool.publish(brake_bool_msg)
-                        # self.pub_brake.publish(brake_msg)
-                        print(brake_bool_msg.data)
-                        
-                        
-            
+            if velocity != 0:                       
+                velocity = abs(velocity)                            # to be robust from noise(negative)
+                if -pi/10 < theta < pi/10:                          # set the FOV(Field of View)
+                    TTC = ranges[i] / (velocity*cos(theta))         # Cacluate TTC
+                    if TTC < self.threshold:                        # if TTC is smaller than threshold, then vehicle must be stopped
+                        brake_bool_msg.data=True                    # update parameter 'data' in brake_bool_msg as False
+                        self.pub_brake_bool.publish(brake_bool_msg) # publish brake_bool_msg
+                        self.pub_brake.publish(brake_msg)           # publish brake_msg
+                                     
+        brake_bool_msg.data=False   
         self.pub_brake_bool.publish(brake_bool_msg)
-        self.pub_brake.publish(brake_msg)
-        # print(angle_increment)
         
-        
-        # rospy.loginfo("scan data : %f"%velocity)
-
-        
-        
-
-        # TODO: publish brake message and publish controller bool
-        
-
-
+       
 def main():
     rospy.init_node('safety_node')
     sn = Safety()
