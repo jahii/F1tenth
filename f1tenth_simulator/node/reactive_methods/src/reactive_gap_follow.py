@@ -30,6 +30,8 @@ class reactive_follow_gap:
         
         ranges = np.array(ranges)
         ranges = ranges[np.arange(270,809)]
+
+        print(len(ranges))
         
         proc_ranges = ranges
         return proc_ranges
@@ -108,7 +110,7 @@ class reactive_follow_gap:
         
         str_angle = angle_diff_index * data.angle_increment
         
-        velocity = 1.0
+        velocity = 2.0
         
 
         #Publish Drive message
