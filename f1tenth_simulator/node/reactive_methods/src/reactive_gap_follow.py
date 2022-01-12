@@ -18,6 +18,8 @@ class reactive_follow_gap:
         self.lidar_sub = rospy.Subscriber(lidarscan_topic,LaserScan,self.lidar_callback)             #TODO
         self.drive_pub = rospy.Publisher(drive_topic,AckermannDriveStamped,queue_size=10)            #TODO
     
+
+
     def preprocess_lidar(self, ranges):
         """ Preprocess the LiDAR scan array. Expert implementation includes:
             1.Setting each value to the mean over some window
