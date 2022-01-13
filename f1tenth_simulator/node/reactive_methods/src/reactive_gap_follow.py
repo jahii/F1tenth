@@ -38,13 +38,9 @@ class reactive_follow_gap:
                 ranges[i]=0.0
         
         ranges = np.array(ranges)
-<<<<<<< HEAD
-        ranges = ranges[np.arange(269,809)]
-=======
         ranges = ranges[np.arange(270,809)]
 
         print(len(ranges))
->>>>>>> hwan_branch
         
         proc_ranges = ranges
         return proc_ranges
@@ -54,33 +50,6 @@ class reactive_follow_gap:
         """ Return the start index & end index of the max gap in free_space_ranges
         """
         free_space_ranges = np.array(free_space_ranges)
-<<<<<<< HEAD
-        max_index = np.where(free_space_ranges==free_space_ranges.max())[0][0]
-        #error=max_index-180
-        print("max_index : "+str(max_index))
-        angle = self.angle_increment*(max_index-269)
-        # global prev_error
-        # global kp
-        # global kd
-        
-        velocity = 1
-        
-        
-        # #TODO: Use kp, ki & kd to implement a PID controller for 
-        # angle = kp * error + kd * (error - prev_error)
-        
-        
-        drive_msg = AckermannDriveStamped()
-        drive_msg.header.stamp = rospy.Time.now()
-        drive_msg.header.frame_id = "laser"
-        drive_msg.drive.steering_angle = angle
-        drive_msg.drive.speed = velocity
-        self.drive_pub.publish(drive_msg)
-        
-        
-        # prev_error = error
-=======
->>>>>>> hwan_branch
         
         #for i in range(len(free_space_ranges)):
             
@@ -110,17 +79,6 @@ class reactive_follow_gap:
 
         #Find closest point to LiDAR
         # for i in range(len(proc_ranges)):
-<<<<<<< HEAD
-        #     if 
-        #150 index safety_bubble
-        
-        free_space_ranges=[]
-        min_index = np.where(proc_ranges==proc_ranges.min())[0][0]
-        print("min index : " + str(min_index))
-        proc_ranges = proc_ranges.tolist()
-        for i in range(len(proc_ranges)):
-            if min_index - 60 < i < min_index + 60 : 
-=======
         #     if         
         free_space_ranges=[]
         
@@ -139,7 +97,6 @@ class reactive_follow_gap:
         proc_ranges = proc_ranges.tolist()
         for i in range(len(proc_ranges)):
             if min_index_int - angle_index < i < min_index_int + angle_index : 
->>>>>>> hwan_branch
                 free_space_ranges.append(0.0)
             else :
                 free_space_ranges.append(proc_ranges[i])
