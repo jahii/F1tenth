@@ -131,7 +131,7 @@ class reactive_follow_gap:
         min_range = ranges[min_index_int]               ####################################### error
         
         
-        theta = math.atan(5.0 / min_range)        # 0.3 = 0.6/2 -> 0.6 = bubble width
+        theta = math.atan(3.5 / min_range)        # 0.3 = 0.6/2 -> 0.6 = bubble width
         angle_index = int(theta / data.angle_increment)
         
         
@@ -155,6 +155,14 @@ class reactive_follow_gap:
         max_index_tuple = np.where(free_space_ranges==free_space_ranges.max())
         max_index_int = int(max_index_tuple[0])
         
+        
+        
+        # for i in range(min_index_int,max_index_int):
+        #     if proc_ranges[max_index_int] - proc_ranges[min_index_int] > 0.5:
+        #         corner_index_int = i
+        
+        
+        
         print("max index :" + str(max_index_int))
         print("max distance :" + str(proc_ranges[max_index_int]))
         print("min index :" + str(min_index_int))
@@ -162,12 +170,17 @@ class reactive_follow_gap:
         
         angle_diff_index = 270 - max_index_int
         
-        if abs(max_index_int - min_index_int) < 60:
-            str_angle = angle_diff_index * data.angle_increment * 1.2
-        else:
-            str_angle = angle_diff_index * data.angle_increment
+        # if abs(max_index_int - min_index_int) < 60:
+        #     str_angle = angle_diff_index * data.angle_increment * 1.2
+        # else:
+        #     str_angle = angle_diff_index * data.angle_increment
         
-        # if proc_ranges[max_index_int] - proc_ranges[min_index_int] > 3.5:
+        str_angle = angle_diff_index * data.angle_increment /proc_ranges[min_index_int]
+        
+        
+        
+        
+        # if proc_ranges[min_index_int] < :
         #         str_angle = angle_diff_index * data.angle_increment * 1.2
         # else:
         #     str_angle = angle_diff_index * data.angle_increment
@@ -175,12 +188,13 @@ class reactive_follow_gap:
             
         
         if str_angle > 0.35:
-            velocity = 1.5
+            velocity = 1.5*proc_ranges[min_index_int]
         elif 0.25 < str_angle <= 0.35:
             velocity = 2.5
         else:
             velocity = 3.5
-        
+         
+        # velocity = 5 *proc_ranges[min_index_int]
 
 
         #Publish Drive message
