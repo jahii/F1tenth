@@ -51,6 +51,8 @@ class Safety(object):
         
         brake_msg=AckermannDriveStamped()
         brake_msg.drive.speed=self.speed
+        time_increment = float(scan_msg.time_increment)
+        scan_time=float(scan_msg.scan_time)
         
         # TODO: calculate TTC
         for i in range(len(ranges)):
@@ -61,7 +63,7 @@ class Safety(object):
                 if -pi/10 < theta < pi/10:
                     TTC = ranges[i] / (velocity*cos(theta))
                     print("TTC of theta " + str(round(theta,3)) + " : " + str(round(TTC,3))+", distance : "+str(round(ranges[i],3)))
-                    #print("theta : ", theta)
+                    #print(time_increment, scan_time)
                     if TTC < self.threshold:
                         brake_bool_msg.data=True
                         print('BRAKE!')

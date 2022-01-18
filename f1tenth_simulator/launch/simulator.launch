@@ -39,11 +39,11 @@
   <!--<node pkg="f1tenth_simulator" name="safety" type="safety_node.py" output="screen">
     <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
   </node>-->
-
+<!--
   <node pkg="f1tenth_simulator" name="wall_follow" type="wall_follow.py" output="screen">
     <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
   </node>
-
+-->
   <!--<node pkg="f1tenth_simulator" name="reactive_methods" type="reactive_gap_follow.py" output="screen">
     <rosparam command="load" file="$(find f1tenth_simulator)/params.yaml"/>
   </node>

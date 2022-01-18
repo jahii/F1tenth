@@ -40,7 +40,7 @@ class reactive_follow_gap:
         ranges = np.array(ranges)
         ranges = ranges[np.arange(270,809)]
 
-        #print(len(ranges))
+        print(len(ranges))
         
         proc_ranges = ranges
         return proc_ranges
@@ -92,20 +92,18 @@ class reactive_follow_gap:
         
         max_index_int = int(max_index_tuple[0])
         
-        ref_max_index_int = max_index_int
-        
         max_range = ranges[max_index_int]
         
         if max_index_int > min_index_int :
             for i in range(min_index_int, max_index_int) :
-                if proc_ranges[i+1] - proc_ranges[i] >1 :
+                if abs(proc_ranges[i+1] - proc_ranges[i]) >1 :
                     corner_index_int = i
                     break
                 else :
                     corner_index_int = min_index_int
         else :
             for i in range(min_index_int, max_index_int-1, -1) :
-                if proc_ranges[i-1] - proc_ranges[i] >1 :
+                if abs(proc_ranges[i] - proc_ranges[i-1]) >1 :
                     corner_index_int = i
                     break
                 else :
@@ -118,9 +116,6 @@ class reactive_follow_gap:
         
         
         theta = math.atan(0.5/ corner_range)        # 0.3 = 0.6/2 -> 0.6 = bubble width
-        if theta > math.pi/3:
-            theta = math.pi/3    
-            
         angle_index = int(theta / data.angle_increment)
         #angle_index = 30
         
@@ -149,12 +144,11 @@ class reactive_follow_gap:
         #     if proc_ranges[max_index_int] - proc_ranges[min_index_int] > 0.5:
         #         corner_index_int = i
         
-        print("min angle : " + str(round(float(min_index_int)/539*180,3)))
-        print("theta : ", str(theta))
-        print("initial max angle : "+ str(round(float(ref_max_index_int)/539*180,3)))
-        print("corner angle : " + str(round(float(corner_index_int)/539*180,3)))
-        print("bubble radius : " +str(round(float(angle_index)/539*180,3)))
-        print("max index :" + str(round(float(max_index_int)/539*180,3)))
+        print("min index : " + str(min_index_int))
+        
+        
+        print("corner index : " + str(corner_index_int))
+        print("max index :" + str(max_index_int))
         print("max distance :" + str(proc_ranges[max_index_int]))
         print("------------------------------------")
         
@@ -167,8 +161,7 @@ class reactive_follow_gap:
         # else:
         #     str_angle = angle_diff_index * data.angle_increment
         
-        str_angle = angle_diff_index * data.angle_increment/(proc_ranges[min_index_int])
-        #corner_range
+        str_angle = angle_diff_index * data.angle_increment/corner_range
         
         
         
@@ -183,9 +176,9 @@ class reactive_follow_gap:
         if str_angle > 0.35:
             velocity = 0.8
         elif 0.25 < str_angle <= 0.35:
-            velocity = 1
+            velocity = 0.8
         else:
-            velocity = 1.5
+            velocity = 0.8
          
         # velocity = 5 *proc_ranges[min_index_int]
 
