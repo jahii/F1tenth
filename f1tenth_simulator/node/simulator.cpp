@@ -134,7 +134,7 @@ public:
         n = ros::NodeHandle("~");
 
         // Initialize car state and driving commands
-        state = {.x=0, .y=0, .theta=0, .velocity=0, .steer_angle=0.0, .angular_velocity=0.0, .slip_angle=0.0, .st_dyn=false};
+        state = {.x=-5, .y=8.5, .theta=0, .velocity=0, .steer_angle=0.0, .angular_velocity=0.0, .slip_angle=0.0, .st_dyn=false};
         accel = 0.0;
         steer_angle_vel = 0.0;
         desired_speed = 0.0;

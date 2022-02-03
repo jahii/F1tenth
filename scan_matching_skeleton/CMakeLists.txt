@@ -125,6 +125,10 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
 )
 
+add_executable(scan_matching_skeleton src/correspond.cpp src/scan_match.cpp src/transform.cpp src/visualization.cpp)
+add_dependencies(scan_matching_skeleton ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(scan_matching_skeleton ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/emu_imu_scan_matching.cpp
