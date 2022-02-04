@@ -53,7 +53,7 @@ void CorrespondenceVisualizer::addCorrespondences(vector<Correspondence> corresp
 void CorrespondenceVisualizer::publishCorrespondences() {
   line_list.header.stamp = ros::Time::now();
   pub.publish(line_list);
-  ROS_INFO("published dots");
+  ROS_INFO("published corr");
   line_list.points.clear();
   line_list.colors.clear();
 }

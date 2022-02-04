@@ -25,6 +25,7 @@ const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
 
 
+
 class ScanProcessor {
   private:
     ros::Publisher pos_pub;
@@ -84,6 +85,9 @@ class ScanProcessor {
 
 
       int count = 0;
+      // float x_error=0.0;
+      // float y_error=0.0;
+      // float theta_error=0.0;
       computeJump(jump_table, prev_points);
       ROS_INFO("Starting Optimization!!!");
 
@@ -114,9 +118,12 @@ class ScanProcessor {
 
         prev_trans = curr_trans;
         ++count;
+      
 
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds, curr_trans);
+        
+        // x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
 
       }
 
@@ -126,6 +133,7 @@ class ScanProcessor {
       
 
       ROS_INFO("Count: %i", count);
+      // ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
