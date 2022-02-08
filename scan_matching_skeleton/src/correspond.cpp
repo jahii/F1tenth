@@ -90,70 +90,86 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
        if(down_jump == -1)
        down_jump = 0;
 
-    double  point_dis = trans_points[i].r;
-    double  point_ang = trans_points[i].theta;
+      double  point_dis = trans_points[i].r;
+      double  point_ang = trans_points[i].theta;
 
-    double  up_dis = old_points[up_jump].distToPoint2(&trans_points[i]);
-    double  up_angle =0;
-    if (point_dis*point_dis - up_dis*up_dis > 0){
-    up_angle =  atan2(up_dis, sqrt(point_dis*point_dis - up_dis*up_dis));
-  }
-    else{
-    up_angle = 3.1415926;
-  }
-    int  up_low_idx = int((point_ang - up_angle)/incre);
-    int  up_high_idx = int((point_ang + up_angle)/incre);
-       if(up_low_idx<0)
-       up_low_idx = 0;
-       if(up_high_idx>=n)
-       up_high_idx = n-1;
+      double  up_dis = old_points[up_jump].distToPoint2(&trans_points[i]);
+      double  up_angle =0;
+      if (point_dis*point_dis - up_dis*up_dis > 0){
+      up_angle =  atan2(up_dis, sqrt(point_dis*point_dis - up_dis*up_dis));
+      }
+      else{
+      up_angle = 3.1415926;
+      }
+      ///////////////////////////////////////////need to change
+    
+      int  up_low_idx = int((point_ang - up_angle)/incre);
+      int  up_high_idx = int((point_ang + up_angle)/incre);
+        if(up_low_idx<0)
+        up_low_idx = 0;
+        if(up_high_idx>=n)
+        up_high_idx = n-1;
+      //add radius of up_idx
+      int up_idx_rad;
+      if(int(point_ang/incre)-up_low_idx > up_high_idx-int(point_ang/incre)){//change
+        up_idx_rad=int(point_ang/incre)-up_low_idx;
+      }
+      else{
+        up_idx_rad=up_high_idx-int(point_ang/incre);
+      }
 
+      double  down_dis = old_points[down_jump].distToPoint2(&trans_points[i]);
+      double  down_angle = 0;
+      if (point_dis*point_dis - down_dis*down_dis >0){
+      down_angle = atan2(down_dis, sqrt(point_dis*point_dis - down_dis*down_dis));
+      }
+      else{
+        down_angle =  3.1415926;
+      }
 
-    double  down_dis = old_points[down_jump].distToPoint2(&trans_points[i]);
-    double  down_angle = 0;
-    if (point_dis*point_dis - down_dis*down_dis >0){
-  down_angle = atan2(down_dis, sqrt(point_dis*point_dis - down_dis*down_dis));
-  }
-  else{
-    down_angle =  3.1415926;
-  }
-
-    int   down_low_idx = int((point_ang - down_angle)/incre);
-    int   down_high_idx = int((point_ang + down_angle)/incre);
-       if(down_low_idx<0)
-       down_low_idx = 0;
-       if(down_high_idx>=n)
-       down_high_idx = n-1;
-
-       for(int j=max(int(up_jump-up_angle/incre),0);j<=min(int(up_jump+up_angle/incre),n-1); ++j){
-         double dis = old_points[j].distToPoint2(&trans_points[i]);
-         if(dis<best_dis){
-           best_dis = dis;
-           best = j;
-           second_best = j-1;
-           if(second_best == -1){
-             second_best = 1;
-           }
-           last_best = best;
-         }
-       }
-
-       for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
-         double dis = old_points[j].distToPoint2(&trans_points[i]);
-         if(dis<best_dis){
-           best_dis = dis;
-           best = j;
-           second_best = j-1;
-           if(second_best == -1){
-             second_best = 1;
-           }
-           last_best = best;
-         }
-       }
-
-
-
-
+      int   down_low_idx = int((point_ang - down_angle)/incre);
+      int   down_high_idx = int((point_ang + down_angle)/incre);
+        if(down_low_idx<0)
+        down_low_idx = 0;
+        if(down_high_idx>=n)
+        down_high_idx = n-1;
+      //add radius of down_idx
+      int down_idx_rad;
+      if(int(point_ang/incre)-down_low_idx > down_high_idx-int(point_ang/incre)){
+        down_idx_rad=int(point_ang/incre)-down_low_idx;
+      }
+      else{
+        down_idx_rad=down_high_idx-int(point_ang/incre);
+      }
+      //campare which index is larger
+      if(up_idx_rad>down_idx_rad){
+        for(int j=max(int(up_jump-up_angle/incre),0);j<=min(int(up_jump+up_angle/incre),n-1); ++j){
+          double dis = old_points[j].distToPoint2(&trans_points[i]);
+          if(dis<best_dis){
+            best_dis = dis;
+            best = j;
+            second_best = j-1;
+            if(second_best == -1){
+              second_best = 1;
+            }
+            last_best = best;
+          }
+        }
+      }
+      else{
+        for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
+          double dis = old_points[j].distToPoint2(&trans_points[i]);
+          if(dis<best_dis){
+            best_dis = dis;
+            best = j;
+            second_best = j-1;
+            if(second_best == -1){
+              second_best = 1;
+            }
+            last_best = best;
+          }
+        }
+      }
     }
 
     // int best = 0;
