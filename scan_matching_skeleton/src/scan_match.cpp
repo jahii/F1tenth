@@ -20,9 +20,11 @@ const string& FRAME_POINTS = "laser";
 
 const float RANGE_LIMIT = 10.0;
 
-const float MAX_ITER = 100.0;
+const float MAX_ITER = 30.0;  
 const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
+const float error_per = 5.0;
+
 
 
 class ScanProcessor {
@@ -84,12 +86,17 @@ class ScanProcessor {
 
 
       int count = 0;
+      float x_error=0.0;
+      float y_error=0.0;
+      float theta_error=0.0;
+      bool icp_correct=false;
+
       computeJump(jump_table, prev_points);
       ROS_INFO("Starting Optimization!!!");
 
       curr_trans = Transform();
 
-      while (count < MAX_ITER && (curr_trans != prev_trans || count==0)) {
+      while (count < MAX_ITER && ( icp_correct==false || count==0)) {
         transformPoints(points, curr_trans, transformed_points);
 
 
@@ -97,7 +104,7 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
 
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
+        //getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
         //
         // cout << "0_N"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_N"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
@@ -105,7 +112,7 @@ class ScanProcessor {
         // cout << "30_N"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
         // cout << "40_N"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
         //
-         //getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
+        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
         // cout << "0_Naive"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_Naive"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
         // cout << "20_Naive"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
@@ -114,9 +121,17 @@ class ScanProcessor {
 
         prev_trans = curr_trans;
         ++count;
+      
 
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds, curr_trans);
+        
+        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+
+        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
+
 
       }
 
@@ -126,6 +141,7 @@ class ScanProcessor {
       
 
       ROS_INFO("Count: %i", count);
+      ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
