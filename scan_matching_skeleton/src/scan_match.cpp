@@ -20,9 +20,10 @@ const string& FRAME_POINTS = "laser";
 
 const float RANGE_LIMIT = 10.0;
 
-const float MAX_ITER = 10.0;
+const float MAX_ITER = 30.0;
 const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
+const float error_per = 5.0;
 
 
 
@@ -85,15 +86,17 @@ class ScanProcessor {
 
 
       int count = 0;
-      // float x_error=0.0;
-      // float y_error=0.0;
-      // float theta_error=0.0;
+      float x_error=0.0;
+      float y_error=0.0;
+      float theta_error=0.0;
+      bool icp_correct=false;
+
       computeJump(jump_table, prev_points);
       ROS_INFO("Starting Optimization!!!");
 
       curr_trans = Transform();
 
-      while (count < MAX_ITER && (curr_trans != prev_trans || count==0)) {
+      while (count < MAX_ITER && ( icp_correct==false || count==0)) {
         transformPoints(points, curr_trans, transformed_points);
 
 
@@ -123,7 +126,12 @@ class ScanProcessor {
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds, curr_trans);
         
-        // x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+
+        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
+
 
       }
 
@@ -133,7 +141,7 @@ class ScanProcessor {
       
 
       ROS_INFO("Count: %i", count);
-      // ROS_INFO("x_error :%f", x_error);
+      ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
