@@ -20,7 +20,7 @@ const string& FRAME_POINTS = "laser";
 
 const float RANGE_LIMIT = 10.0;
 
-const float MAX_ITER = 10.0;
+const float MAX_ITER = 100.0;
 const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
 
