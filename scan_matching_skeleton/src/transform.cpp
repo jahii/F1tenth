@@ -180,7 +180,7 @@ int solve_deg4(double a, double b, double c, double d, double e,
 }
 
 // returns the largest real root to ax^3 + bx^2 + cx + d = 0
-complex<float> get_cubic_root(float a, float b, float c, float d) {
+  complex<float> get_cubic_root(float a, float b, float c, float d) {
   //std::cout<< "a= " << a<< ";  b= " << b<< ";  c= " << c<< ";  d= " << d<<";"<<std::endl;
   // Reduce to depressed cubic
   float p = c/a - b*b/(3*a*a);

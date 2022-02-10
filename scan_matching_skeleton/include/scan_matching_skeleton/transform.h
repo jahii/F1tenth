@@ -43,6 +43,12 @@ struct Transform {
     p.r = sqrt(x*x+y*y);
     p.theta = atan2(y,x);
     p.theta = p.theta + theta_rot;
+    while(p.theta > M_PI){
+      p.theta -= 2*M_PI;
+    }
+    while(p.theta <= -M_PI){
+      p.theta += 2*M_PI;
+    }
     return p;
   }
 

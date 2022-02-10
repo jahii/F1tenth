@@ -104,7 +104,7 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
 
-        //getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
+        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
         //
         // cout << "0_N"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_N"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
@@ -112,7 +112,7 @@ class ScanProcessor {
         // cout << "30_N"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
         // cout << "40_N"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
         //
-        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
+        //getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
         // cout << "0_Naive"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_Naive"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
         // cout << "20_Naive"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
@@ -134,6 +134,8 @@ class ScanProcessor {
 
 
       }
+      // ROS_INFO("10th ponint is corresponding to : %f",corresponds[10].pj1);
+      // ROS_INFO("20th ponint is corresponding to : %f",corresponds[20].pj1);
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       points_viz->addPoints(transformed_points, col);
@@ -161,7 +163,8 @@ class ScanProcessor {
 
       for (int i = 0; i < ranges.size(); ++i) {
         float range = ranges.at(i);
-        if (range > RANGE_LIMIT) {
+        if (!isnan(range)&&range > RANGE_LIMIT) {
+          points.push_back(Point(RANGE_LIMIT, angle_min + angle_increment * i));
           continue;
         }
         if (!isnan(range) && range >= range_min && range <= range_max) {
