@@ -35,6 +35,7 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
       }
 
+
 }
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,

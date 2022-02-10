@@ -20,18 +20,15 @@ const string& FRAME_POINTS = "laser";
 
 const float RANGE_LIMIT = 10.0;
 
-const float MAX_ITER = 30.0;
+const float MAX_ITER = 2.0;
 const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
-const float error_per = 5.0;
-
 
 
 class ScanProcessor {
   private:
     ros::Publisher pos_pub;
     ros::Publisher marker_pub;
-    ros::Publisher pre_pub;
 
     vector<Point> points;
     vector<Point> transformed_points;
@@ -43,7 +40,6 @@ class ScanProcessor {
     tf::Transform tr;
 
     PointVisualizer* points_viz;
-    PointVisualizer* prepoints_viz;
     CorrespondenceVisualizer* corr_viz;
 
     geometry_msgs::PoseStamped msg;
@@ -56,13 +52,7 @@ class ScanProcessor {
     ScanProcessor(ros::NodeHandle& n) : curr_trans(Transform()) {
       pos_pub = n.advertise<geometry_msgs::PoseStamped>(TOPIC_POS, 1);
       marker_pub = n.advertise<visualization_msgs::Marker>(TOPIC_RVIZ, 1);
-
-      pre_pub = n.advertise<visualization_msgs::Marker>("/scan_pub", 1);
-
       points_viz = new PointVisualizer(marker_pub, "scan_match", FRAME_POINTS);
-
-      prepoints_viz = new PointVisualizer(pre_pub, "scan_match", FRAME_POINTS);
-      
       corr_viz = new CorrespondenceVisualizer(marker_pub, "scan_match", FRAME_POINTS);
       global_tf = Eigen::Matrix3f::Identity(3,3);
     }
@@ -77,26 +67,19 @@ class ScanProcessor {
         return;
       }
 
-      col.r = 0.0; col.b = 1.0; col.g = 0.0; col.a = 1.0;
-      prepoints_viz->addPoints(points, col);
-      prepoints_viz->publishPoints();
-      // col.r = 1.0; col.b = 0.0; col.g = 0.0; col.a = 1.0;
-      // points_viz->addPoints(prev_points, col);
-      // points_viz->publishPoints();
+      //col.r = 0.0; col.b = 1.0; col.g = 0.0; col.a = 1.0;
+      //points_viz->addPoints(points, col);
 
+      col.r = 1.0; col.b = 0.0; col.g = 0.0; col.a = 1.0;
+      points_viz->addPoints(prev_points, col);
 
       int count = 0;
-      float x_error=0.0;
-      float y_error=0.0;
-      float theta_error=0.0;
-      bool icp_correct=false;
-
       computeJump(jump_table, prev_points);
-      ROS_INFO("Starting Optimization!!!");
+      ROS_INFO("Starting Optimization");
 
       curr_trans = Transform();
 
-      while (count < MAX_ITER && ( icp_correct==false || count==0)) {
+      while (count < MAX_ITER && (curr_trans != prev_trans || count==0)) {
         transformPoints(points, curr_trans, transformed_points);
 
 
@@ -112,7 +95,7 @@ class ScanProcessor {
         // cout << "30_N"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
         // cout << "40_N"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
         //
-         //getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
+        // getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
         // cout << "0_Naive"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_Naive"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
         // cout << "20_Naive"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
@@ -121,31 +104,21 @@ class ScanProcessor {
 
         prev_trans = curr_trans;
         ++count;
-      
 
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds, curr_trans);
-        
-        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-
-        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
-
 
       }
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       points_viz->addPoints(transformed_points, col);
       points_viz->publishPoints();
-      
 
       ROS_INFO("Count: %i", count);
-      ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
-      // publishPos();
+      publishPos();
       prev_points = points;
     }
 
