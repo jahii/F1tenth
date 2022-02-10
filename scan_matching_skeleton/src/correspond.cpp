@@ -113,7 +113,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       ///////////////////////////////////////////need to change
 
     
-<<<<<<< HEAD
       int  last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
       int  last_high_idx = int((point_ang + last_angle)/incre);
         if(last_low_idx<0)
@@ -136,16 +135,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         // ROS_INFO("%dth is PROBLEM, last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
         // ROS_INFO("point_angle_index : %d, radius_index : %d point_angle: %f,last_angle: %f",int(point_ang/incre),int(last_angle/incre),point_ang,last_angle);
       }
-=======
-      int  up_low_idx = int((point_ang - up_angle)/incre);
-      int  up_high_idx = int((point_ang + up_angle)/incre);
-        if(up_low_idx<0)
-        up_low_idx = 0;
-        if(up_high_idx>=n)
-        up_high_idx = n-1;
-      //add radius of up_idx
-      int up_idx_rad=max(int(point_ang/incre)-up_low_idx, up_high_idx-int(point_ang/incre));
->>>>>>> 0882433f127a9b77a4fc8bdf09c278ef50e8764a
 
 
       //add radius of up_idx
@@ -175,7 +164,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
 
       //add radius of down_idx
-<<<<<<< HEAD
       // int down_idx_rad; //hand made
       // if(int(point_ang/incre)-down_low_idx > down_high_idx-int(point_ang/incre)){
       //   down_idx_rad=int(point_ang/incre)-down_low_idx;
@@ -240,15 +228,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           dis= old_points[j].distToPoint2(&trans_points[i]);
           //  if(i==30) ROS_INFO("%ith dis is %d",i,dis);
           // if(i==20) ROS_INFO("%ith dis is %d",i,dis);
-=======
-      int down_idx_rad=max(int(point_ang/incre)-down_low_idx, down_high_idx-int(point_ang/incre));
-      //campare which index is smaller
-
-
-      // if(max(int(up_jump-up_angle/incre),0)>min(int(down_jump+down_angle/incre),n-1)){
-        for(int j=max(int(up_jump-up_angle/incre),0);j<=min(int(up_jump+up_angle/incre),n-1); ++j){
-          double dis = old_points[j].distToPoint2(&trans_points[i]);
->>>>>>> 0882433f127a9b77a4fc8bdf09c278ef50e8764a
           if(dis<best_dis){
             best_dis=dis;
             best=j;
@@ -257,7 +236,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             last_best=best;
           }
         }
-<<<<<<< HEAD
       }
 */ // gunhee diff
       
@@ -266,10 +244,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         for(int j= last_low_idx; j<=last_high_idx; j++){
           dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-=======
-        for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
-          double dis = old_points[j].distToPoint2(&trans_points[i]);
->>>>>>> 0882433f127a9b77a4fc8bdf09c278ef50e8764a
           if(dis<best_dis){
             best_dis=dis;
             best=j;
@@ -304,7 +278,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
               }
           } 
         }
-<<<<<<< HEAD
 
 
 
@@ -334,11 +307,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       //   }
 
       //   for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
-=======
-      // }
-      // else{
-      //   for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(up_jump+up_angle/incre),n-1); ++j){
->>>>>>> 0882433f127a9b77a4fc8bdf09c278ef50e8764a
       //     double dis = old_points[j].distToPoint2(&trans_points[i]);
       //     if(dis<best_dis){
       //       best_dis = dis;
@@ -350,18 +318,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       //       last_best = best;
       //     }
       //   }
-<<<<<<< HEAD
       prev_point_ang = point_ang;
-
-
-
-
-
-=======
-
-        
-      // }
->>>>>>> 0882433f127a9b77a4fc8bdf09c278ef50e8764a
     }
 
     // int best = 0;
