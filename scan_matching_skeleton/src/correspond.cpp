@@ -118,6 +118,16 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     down_angle =  3.1415926;
   }
 
+    double lastbest_dis=old_points[last_best].distToPoint2(&trans_points[i]);
+    if((lastbest_dis>up_dis)||(lastbest_dis>down_dis)){
+    ROS_INFO("%dth lastbest_dis:%f, up_dis:%f, down_dis: %f",i,lastbest_dis,up_dis,down_dis);
+      }
+    // else if((lastbest_dis>up_dis)&&(lastbest_dis>down_dis))ROS_INFO("both is smaller");
+    // else if(lastbest_dis>up_dis) ROS_INFO("up_dis is smaller");
+    // else if(lastbest_dis>down_dis) ROS_INFO("down_dis is smaller");
+
+
+
     int   down_low_idx = int((point_ang - down_angle)/incre);
     int   down_high_idx = int((point_ang + down_angle)/incre);
        if(down_low_idx<0)
@@ -151,6 +161,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
          }
        }
 
+    
 
 
 
