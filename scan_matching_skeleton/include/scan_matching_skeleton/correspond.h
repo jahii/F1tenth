@@ -55,10 +55,10 @@ struct Point {
 
 struct Correspondence{
   Point *p, *po, *pj1, *pj2;
-  float pix, piy;
+  float pix, piy, p1x, p1y;
   Eigen::Vector2f v;
   Correspondence(Point *p, Point *po, Point *pj1, Point *pj2) : p(p), po(po), pj1(pj1), pj2(pj2) {
-    float p1x = pj1->getX(), p1y = pj1->getY();
+    p1x = pj1->getX(), p1y = pj1->getY();
     float p2x = pj2->getX(), p2y = pj2->getY();
     float px = p->getX(), py = p->getY();
     float d = (p1x*p2x + p1y*p2y + p1x*px - p2x*px + p1y*py - p2y*py - p1x*p1x - p1y*p1y)/
@@ -87,9 +87,10 @@ struct Correspondence{
 };
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre);
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart);
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob);
+                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive);
 
 void computeJump(vector< vector<int> >& table, vector<Point>& points);
+

@@ -10,9 +10,11 @@ const int DOWN_SMALL = 2;
 const int DOWN_BIG = 3;
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob){
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive){
+
 
       c.clear();
+      best_index_naive.clear();
       int last_best = -1;
       const int n = trans_points.size();
       const int m = old_points.size();
@@ -31,7 +33,10 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
             second_min_index = j-1;
 
           }
+        
         }
+        best_index_naive.push_back(min_index);
+
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
       }
 
@@ -39,7 +44,7 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
 }
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre){
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart){
 
   // Written with inspiration from: https://github.com/AndreaCensi/gpc/blob/master/c/gpc.c
   // use helper functions and structs in transform.h and correspond.h
@@ -51,6 +56,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   // output : c; update the correspondence vector in place which is provided as a reference. you need to find the index of the best and the second best point.
   //Initializecorrespondences
   c.clear();
+  best_index_smart.clear();
   int last_best = -1;
   double prev_point_ang=-1.0;
   const int m = trans_points.size();
@@ -77,6 +83,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           last_best = best;
         }
       }
+      // ROS_INFO("Smart : 0th best index : %d, i : %d",best,i);
+
     }
     else{
       int up_jump;
@@ -113,13 +121,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       ///////////////////////////////////////////need to change
 
     
-      int  last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
-      int  last_high_idx = int((point_ang + last_angle)/incre);
+      int  last_low_idx = int((point_ang - last_angle)/incre)-10; //start angle = -3.1415~
+      int  last_high_idx = int((point_ang + last_angle)/incre+10);
         if(last_low_idx<0)
         last_low_idx = 0;
         if(last_high_idx>=n)
         // last_high_idx=n-1;
-        last_high_idx -=1079;
+        last_high_idx -=1080;
       double last_low_dis =old_points[last_low_idx].distToPoint(&trans_points[i]);
       if(prev_point_ang==-1){
         prev_point_ang = point_ang;
@@ -241,7 +249,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       
         double dis = 0;
         if(last_high_idx>last_low_idx){
-        for(int j= last_low_idx; j<=last_high_idx; j++){
+        for(int j=last_low_idx; j<=last_high_idx; j++){
           dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
           if(dis<best_dis){
@@ -266,7 +274,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             last_best=best;
             }
           }
-          for(int j=0;j<last_high_idx;j++){
+          for(int j=0;j<=last_high_idx;j++){
             dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
             if(dis<best_dis){
@@ -324,7 +332,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     // int best = 0;
     // int second_best = best-1;
     
-
+  best_index_smart.push_back(best);
   c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
     }
 

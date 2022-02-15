@@ -24,6 +24,8 @@ const float MAX_ITER = 30.0;
 const float MIN_INFO = 0.1;
 const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
 const float error_per = 5.0;
+int zero_index_smart=0;
+int zero_index_naive=0;
 
 
 
@@ -36,8 +38,11 @@ class ScanProcessor {
     vector<Point> points;
     vector<Point> transformed_points;
     vector<Point> prev_points;
-    vector<Correspondence> corresponds;
+    vector<Correspondence> corresponds_smart;
+    vector<Correspondence> corresponds_naive;
     vector< vector<int> > jump_table;
+    vector<int> best_index_smart;
+    vector<int> best_index_naive;
     Transform prev_trans, curr_trans;
     tf::TransformBroadcaster br;
     tf::Transform tr;
@@ -92,7 +97,7 @@ class ScanProcessor {
       bool icp_correct=false;
 
       computeJump(jump_table, prev_points);
-      ROS_INFO("Starting Optimization!!!");
+      // ROS_INFO("Starting Optimization!!!");
 
       curr_trans = Transform();
 
@@ -104,33 +109,43 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
 
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
-        //
-        // cout << "0_N"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
-        // cout << "10_N"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
-        // cout << "20_N"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
-        // cout << "30_N"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
-        // cout << "40_N"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
-        //
-        //getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
-        // cout << "0_Naive"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
-        // cout << "10_Naive"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
-        // cout << "20_Naive"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
-        // cout << "30_Naive"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
-        // cout << "40_Naive"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
+
+        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive);
+        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart);
+        
+  
+        for(int a = 0; a<1000; a++){
+          // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
+          if( best_index_smart[a]!= best_index_naive[a]){
+            //cout << a <<"_Smart : "<<corresponds_smart[a].p1x << " "<< corresponds_smart[a].p1y <<endl;
+            //cout << a <<"_Naive : "<<corresponds_naive[a].p1x << " "<< corresponds_naive[a].p1y <<endl;
+            cout << best_index_smart[a] << " " << best_index_naive[a] << endl;
+          
+          }
+        }
+        
+        // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;
+        // cout << "10_Naive"<<corresponds_naive[100].pix << " "<< corresponds_naive[100].piy <<endl;
+        // cout << "20_N"<<corresponds_smart[200].pix << " "<< corresponds_smart[200].piy <<endl;
+        // cout << "20_Naive"<<corresponds_naive[200].pix << " "<< corresponds_naive[200].piy <<endl;
+        // cout << "30_N"<<corresponds_smart[300].pix << " "<< corresponds_smart[300].piy <<endl;
+        // cout << "30_Naive"<<corresponds_naive[300].pix << " "<< corresponds_naive[300].piy <<endl;
+        // cout << "40_N"<<corresponds_smart[400].pix << " "<< corresponds_smart[400].piy <<endl;
+        // cout << "40_Naive"<<corresponds_naive[400].pix << " "<< corresponds_naive[400].piy <<endl;
 
         prev_trans = curr_trans;
         ++count;
       
 
         // **************************************** We update the transforms here ******************************************* ////
-        updateTransform(corresponds, curr_trans);
+        updateTransform(corresponds_smart, curr_trans);
         
         x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
         y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
         theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
 
         if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
+        
 
 
       }

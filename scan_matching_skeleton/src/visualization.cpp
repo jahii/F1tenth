@@ -22,7 +22,7 @@ void PointVisualizer::addPoints(vector<Point>& points, std_msgs::ColorRGBA color
 void PointVisualizer::publishPoints() {
   dots.header.stamp = ros::Time::now();
   pub.publish(dots);
-  ROS_INFO("published dots");
+  //ROS_INFO("published dots");
   dots.points.clear();
   dots.colors.clear();
 }
