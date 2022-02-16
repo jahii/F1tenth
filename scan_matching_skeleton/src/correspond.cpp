@@ -11,10 +11,9 @@ const int DOWN_BIG = 3;
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
                         vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive){
-
-
       c.clear();
       best_index_naive.clear();
+
       int last_best = -1;
       const int n = trans_points.size();
       const int m = old_points.size();
@@ -31,16 +30,11 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
             min_dist = dist;
             min_index = j;
             second_min_index = j-1;
-
           }
-        
         }
         best_index_naive.push_back(min_index);
-
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
       }
-
-
 }
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
@@ -61,9 +55,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   double prev_point_ang=-1.0;
   const int m = trans_points.size();
   const int n = old_points.size();
+
   //ROS_INFO("size of m : %d, size of n: %d",m,n);
   //angle_incre:0.005823
-
   //Do for each point
   for(int i = 0; i<m; ++i){
     double best_dis = 10000000.00;
@@ -116,15 +110,15 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
       }
       else{
-      last_angle = 3.1415926;
+      last_angle = 5*M_PI/6;//3.1415926
       }
       ///////////////////////////////////////////need to change
 
     
-      int  last_low_idx = int((point_ang - last_angle)/incre)-10; //start angle = -3.1415~
-      int  last_high_idx = int((point_ang + last_angle)/incre+10);
+      int  last_low_idx = int((point_ang - last_angle)/incre)-5; //start angle = -3.1415~
+      int  last_high_idx = int((point_ang + last_angle)/incre)+5;
         if(last_low_idx<0)
-        last_low_idx = 0;
+        last_low_idx += 1080;
         if(last_high_idx>=n)
         // last_high_idx=n-1;
         last_high_idx -=1080;
@@ -133,7 +127,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         prev_point_ang = point_ang;
       }
       //ROS_INFO("%dth point angle-prev_point_ang: %f",i,point_ang-prev_point_ang);
-    
+
       // if(i==30||i==300||i==500)ROS_INFO("%dth last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
       if((last_best < last_low_idx)&&(last_best>last_high_idx)){
         ROS_INFO("%dth arctan(%f/sqrt(%f^2-%f^2))=%f, point_angle = %f",i, last_best_dis,point_dis,last_best_dis,last_angle, point_ang);
@@ -248,8 +242,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 */ // gunhee diff
       
         double dis = 0;
-        if(last_high_idx>last_low_idx){
-        for(int j=last_low_idx; j<=last_high_idx; j++){
+        if(last_high_idx>last_low_idx){ 
+        for(int j=last_low_idx; j<=last_high_idx; ++j){
           dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
           if(dis<best_dis){
@@ -263,7 +257,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         }
         }
         else{
-          for(int j=last_low_idx;j<1080;j++){
+          for(int j=last_low_idx;j<1080;++j){
             dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
           if(dis<best_dis){
@@ -274,7 +268,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             last_best=best;
             }
           }
-          for(int j=0;j<=last_high_idx;j++){
+          for(int j=0;j<=last_high_idx;++j){
             dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
             if(dis<best_dis){
