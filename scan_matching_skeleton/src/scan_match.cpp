@@ -9,6 +9,7 @@
 #include "scan_matching_skeleton/transform.h"
 #include "scan_matching_skeleton/visualization.h"
 #include <tf/transform_broadcaster.h>
+#include "scan_matching_skeleton/time_pub.h"
 
 
 using namespace std;
@@ -17,6 +18,7 @@ const string& TOPIC_SCAN  = "/scan";
 const string& TOPIC_POS = "/scan_match_location";
 const string& TOPIC_RVIZ = "/scan_match_debug";
 const string& FRAME_POINTS = "laser";
+const string& TOPIC_TIME= "/corr_time";
 
 const float RANGE_LIMIT = 10.0;
 
@@ -37,6 +39,7 @@ class ScanProcessor {
     ros::Publisher pos_pub;
     ros::Publisher marker_pub;
     ros::Publisher pre_pub;
+    ros::Publisher time_pub;
 
     vector<Point> points;
     vector<Point> transformed_points;
@@ -66,14 +69,15 @@ class ScanProcessor {
     ScanProcessor(ros::NodeHandle& n) : curr_trans(Transform()) {
       pos_pub = n.advertise<geometry_msgs::PoseStamped>(TOPIC_POS, 1);
       marker_pub = n.advertise<visualization_msgs::Marker>(TOPIC_RVIZ, 1);
-
       pre_pub = n.advertise<visualization_msgs::Marker>("/scan_pub", 1);
+      time_pub= n.advertise<scan_matching_skeleton::time_pub>("/corr_time",1);
 
       points_viz = new PointVisualizer(marker_pub, "scan_match", FRAME_POINTS);
 
       prepoints_viz = new PointVisualizer(pre_pub, "scan_match", FRAME_POINTS);
       
       corr_viz = new CorrespondenceVisualizer(marker_pub, "scan_match", FRAME_POINTS);
+
       global_tf = Eigen::Matrix3f::Identity(3,3);
     }
 
@@ -101,6 +105,8 @@ class ScanProcessor {
       float theta_error=0.0;
       bool icp_correct=false;
 
+      scan_matching_skeleton::time_pub time_msg;
+
       computeJump(jump_table, prev_points);
       // ROS_INFO("Starting Optimization!!!");
 
@@ -120,6 +126,9 @@ class ScanProcessor {
         getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart);
         after_smart_time = ros::Time::now().nsec/100000;
 
+        time_msg.naive_time=middle_time-before_naive_time;
+        time_msg.smart_time=after_smart_time-middle_time;
+        time_pub.publish(time_msg);
 
         ROS_INFO("Naive time: %d",middle_time-before_naive_time);
         ROS_INFO("Smart time: %d",after_smart_time-middle_time);

@@ -56,7 +56,8 @@ find_package(Eigen3 REQUIRED)
 #   Message1.msg
 #   Message2.msg
 # )
-
+add_message_files(FILES time_pub.msg)
+generate_messages(DEPENDENCIES std_msgs)
 ## Generate services in the 'srv' folder
 # add_service_files(
 #   FILES
