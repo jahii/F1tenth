@@ -121,18 +121,19 @@ class ScanProcessor {
         after_smart_time = ros::Time::now().nsec/100000;
 
 
-        ROS_INFO("Naive time: %d",middle_time-before_naive_time);
-        ROS_INFO("Smart time: %d",after_smart_time-middle_time);
+        // ROS_INFO("Naive time: %d",middle_time-before_naive_time);
+        // ROS_INFO("Smart time: %d",after_smart_time-middle_time);
   
-        // for(int a = 0; a<1080; a++){
-        //   // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-        //   if(best_index_smart[a] != best_index_naive[a]){
-        //     cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
-        //     cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
-        //     cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
-        //     cout << " "<< endl;         
-        //   }
-        // }
+        for(int a = 0; a<1080; a++){
+          // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
+          // if(abs(best_index_smart[a]-best_index_naive[a])>1 && !(abs(best_index_smart[a]-best_index_naive[a])==1079)){
+          if(best_index_smart[a] != best_index_naive[a]){
+            cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
+            // cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
+            cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
+            cout << " "<< endl;         
+          }
+        }
         
         // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;
         // cout << "10_Naive"<<corresponds_naive[100].pix << " "<< corresponds_naive[100].piy <<endl;

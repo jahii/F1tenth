@@ -1,5 +1,6 @@
 #include "scan_matching_skeleton/correspond.h"
 #include "cmath"
+#include "math.h"
 #include "ros/ros.h"
 
 using namespace std;
@@ -57,8 +58,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   c.clear();
   best_index_smart.clear();
   index_table_smart.clear();
-  // index_table_smart[LAST_LOW_idx].clear();
-  // index_table_smart[LAST_HIGH_idx].clear();
 
 
   int last_best = -1;
@@ -68,289 +67,73 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   int last_low_idx;
   int last_high_idx;
 
-  //ROS_INFO("size of m : %d, size of n: %d",m,n);
-  //angle_incre:0.005823
-  //Do for each point
   for(int i = 0; i<m; ++i){
     double best_dis = 10000000.00;
     int best = -1;
     int second_best = -1;
+    double  point_dis = trans_points[i].r;
+    double  point_ang = trans_points[i].theta+M_PI;
+    int start_index = int(point_ang/incre);
+    int we_start_at = (last_best!=-1)? (last_best+1) : start_index;
 
-    if(last_best == -1){
-      for(int j=0;j<n; ++j){
-        double dis = old_points[j].distToPoint2(&trans_points[i]);
-        if(dis<best_dis){
-          best_dis = dis;
-          best = j;
-          second_best = j-1;
-          if(second_best == -1){
-            second_best = 1;
+    int up_check = we_start_at+1;
+    int down_check = we_start_at;
+
+    double last_dist_up = 10000000.00;
+    double last_dist_down = 10000000.00;
+
+    bool up_stopped=false, down_stopped=false;
+    // ROS_INFO("%dth scan",i);
+
+
+    while(!(up_stopped && down_stopped)){
+      
+      bool now_up = up_stopped ? 0 :
+                  down_stopped ? 1 : last_dist_up<last_dist_down;
+      // ROS_INFO("now up : %s",  now_up? "true" : "false");
+      // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
+      // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
+
+      if(now_up){
+        if(up_check >= n){up_stopped=true;continue;}
+        last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
+        if(last_dist_up<best_dis) {best = up_check; best_dis = last_dist_up;}
+        if(up_check>start_index){
+          double del_theta = up_check*incre-point_ang;
+          double min_dist_up = sin(del_theta)*point_dis;
+          if(min_dist_up*min_dist_up>best_dis){
+            up_stopped=true; continue;
           }
-          last_best = best;
+          if(old_points[up_check].r<point_dis){up_check = jump_table[up_check][UP_BIG];
+          }else{up_check = jump_table[up_check][UP_SMALL];}
+        }else{
+          up_check++;
         }
-      }
-      // ROS_INFO("Smart : 0th best index : %d, i : %d",best,i);
-
-    }
-    else{
-      int up_jump;
-      int down_jump;
-      if(trans_points[i].r <= old_points[last_best].r){
-         up_jump = jump_table[last_best][UP_SMALL];
-         down_jump = jump_table[last_best][DOWN_SMALL];
       }else{
-         up_jump = jump_table[last_best][UP_BIG];
-         down_jump = jump_table[last_best][DOWN_BIG];
-      }
-       if(up_jump == n)
-       up_jump = n-1;
-       if(down_jump == -1)
-       down_jump = 0;
-      // if(i==30)ROS_INFO("%dth last best point is %d",i,last_best);
-      // else if(i==300) ROS_INFO("%dth last best point is %d",i,last_best);
-      // else if(i==500) ROS_INFO("%dth last best point is %d",i,last_best);
-      double  point_dis = trans_points[i].r;
-      double  point_ang = trans_points[i].theta+M_PI;
-      
-      // double  up_dis = old_points[up_jump].distToPoint2(&trans_points[i]);
-      double  last_best_dis = old_points[last_best].distToPoint(&trans_points[i]);
-      // double  up_angle =0;
-      double  last_angle = 0;
-      
-
-      if (point_dis*point_dis - last_best_dis*last_best_dis > 0){
-        last_angle =  atan2(last_best_dis, sqrt(point_dis*point_dis - last_best_dis*last_best_dis));
-        // if(last_angle < incre && (i==30 || i==300 || i==500)) ROS_INFO("TOO SMALL in %dth",i);
-        last_low_idx = int((point_ang - last_angle)/incre)-2; //start angle = -3.1415~
-        last_high_idx = int((point_ang + last_angle)/incre)+2;
-      }
-      else{
-        
-        if (i%10==0) {ROS_INFO("%dth is TOO BIG",i);}
-        // ROS_INFO("point distance : %f, last best distance : %f",point_dis, last_best_dis);
-        last_angle = M_PI;//3.1415926
-        last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
-        last_high_idx = int((point_ang + last_angle)/incre);
-      }
-      ///////////////////////////////////////////need to change
-        if(last_low_idx<0)
-        last_low_idx += 1080;
-        if(last_high_idx>=n)
-        // last_high_idx=n-1;
-        last_high_idx -=1080;
-      double last_low_dis =old_points[last_low_idx].distToPoint(&trans_points[i]);
-      if(prev_point_ang==-1){
-        prev_point_ang = point_ang;
-      }
-      //ROS_INFO("%dth point angle-prev_point_ang: %f",i,point_ang-prev_point_ang);
-
-      // if(i==30||i==300||i==500)ROS_INFO("%dth last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-      if((last_best < last_low_idx)&&(last_best>last_high_idx)){
-        ROS_INFO("%dth arctan(%f/sqrt(%f^2-%f^2))=%f, point_angle = %f",i, last_best_dis,point_dis,last_best_dis,last_angle, point_ang);
-        ROS_INFO("last_best = %d, last_low_index=%d(point_angle_index)-%d(radius index)=%d, last_high_index=%d",last_best,int(point_ang/incre),int(last_angle/incre),last_low_idx,last_high_idx);
-        ROS_INFO("(last_low_distance,last_best_distance) = (%f, %f)",last_low_dis,last_best_dis);
-        // ROS_INFO("size of m : %d, size of n: %d",m,n);
-        // ROS_INFO("%dth is PROBLEM, last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-        // ROS_INFO("point_angle_index : %d, radius_index : %d point_angle: %f,last_angle: %f",int(point_ang/incre),int(last_angle/incre),point_ang,last_angle);
-      }
-
-
-      //add radius of up_idx
-      // int up_idx_rad; //hand-made
-      // if(int(point_ang/incre)-up_low_idx > up_high_idx-int(point_ang/incre)){//change
-      //   up_idx_rad=int(point_ang/incre)-up_low_idx;
-      // }
-      // else{
-      //   up_idx_rad=up_high_idx-int(point_ang/incre);
-      // }
-
-      double  down_dis = old_points[down_jump].distToPoint2(&trans_points[i]);
-      double  down_angle = 0;
-      if (point_dis*point_dis - down_dis*down_dis >0){
-      down_angle = atan2(down_dis, sqrt(point_dis*point_dis - down_dis*down_dis));
-      }
-      else{
-        down_angle =  3.1415926;
-      }
-
-      int   down_low_idx = int((point_ang - down_angle)/incre); 
-      int   down_high_idx = int((point_ang + down_angle)/incre);
-        if(down_low_idx<0)
-        down_low_idx = 0;
-        if(down_high_idx>=n)
-        down_high_idx = n-1;
-
-
-      //add radius of down_idx
-      // int down_idx_rad; //hand made
-      // if(int(point_ang/incre)-down_low_idx > down_high_idx-int(point_ang/incre)){
-      //   down_idx_rad=int(point_ang/incre)-down_low_idx;
-      // }
-      // else{
-      //   down_idx_rad=down_high_idx-int(point_ang/incre);
-      // }
-      //campare which index is larger
-      // if(up_idx_rad>down_idx_rad){
-      //   for(int j=max(int(up_jump-up_angle/incre),0);j<=min(int(up_jump+up_angle/incre),n-1); ++j){
-      //   // for(int j=max(int(point_ang/incre-up_angle/incre),0);j<=min(int(point_ang/incre+up_angle/incre),n-1); ++j){
-      //     double dis = old_points[j].distToPoint2(&trans_points[i]);
-      //     if(dis<best_dis){
-      //       best_dis = dis;
-      //       best = j;
-      //       second_best = j-1;
-      //       if(second_best == -1){
-      //         second_best = 1;
-      //       }
-      //       last_best = best;
-      //     }
-      //   }
-      // }
-      // else{
-      //   for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
-      //     double dis = old_points[j].distToPoint2(&trans_points[i]);
-      //     if(dis<best_dis){
-      //       best_dis = dis;
-      //       best = j;
-      //       second_best = j-1;
-      //       if(second_best == -1){
-      //         second_best = 1;
-      //       }
-      //       last_best = best;
-      //     }
-      //   }
-      // }
-/*
-      int up_idx_diff= up_high_idx-up_low_idx;
-      int down_idx_diff= down_high_idx-down_low_idx;
-      double dis=0;
-      if(i=30) {ROS_INFO("up : %d,     %d",up_high_idx,up_low_idx);
-                  ROS_INFO("down : %d,     %d",down_high_idx,down_low_idx);
-                  ROS_INFO("point ang : %f", point_ang);
-      }
-
-      if(up_idx_diff>=down_idx_diff){
-        for(int j= up_low_idx; j<=up_high_idx; j++){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
+        if(down_check < 0){down_stopped=true;continue;}
+        last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
+        if(last_dist_down<best_dis) {best = down_check; best_dis = last_dist_down;}
+        if(down_check<start_index){
+          double del_theta = down_check*incre-point_ang;
+          double min_dist_down = sin(del_theta)*point_dis;
+          if(min_dist_down*min_dist_down>best_dis){
+            down_stopped=true; continue;
           }
+          if(old_points[down_check].r<point_dis){down_check = jump_table[down_check][DOWN_BIG];
+          }else{down_check = jump_table[down_check][DOWN_SMALL];}
+        }else{
+          down_check--;
         }
+
       }
-      else {
-        for(int j= down_low_idx; j<=down_high_idx; j++){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          //  if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-          // if(i==20) ROS_INFO("%ith dis is %d",i,dis);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-          }
-        }
-      }
-*/ // gunhee diff
-      
-        double dis = 0;
-        if(last_high_idx>last_low_idx){ 
-        for(int j=last_low_idx; j<=last_high_idx; ++j){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-          }
-
-        }
-        }
-        else{
-          for(int j=0;j<=last_high_idx;++j){
-            dis= old_points[j].distToPoint2(&trans_points[i]);
-          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-            if(dis<best_dis){
-              best_dis=dis;
-              best=j;
-              second_best=j-1;
-              if(second_best==-1) second_best=1;
-              last_best=best;
-              }
-          } 
-          for(int j=last_low_idx;j<1080;++j){
-            dis= old_points[j].distToPoint2(&trans_points[i]);
-          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-            }
-          }
-          
-        }
-
-
-
-
-
-
-      // if(i==300){
-      //   ROS_INFO("%ith dis is %d",i,dis);
-      //   ROS_INFO("%ith Point's best point is %i ",i,best); 
-      // }
-      // else if(i==400){
-      //   ROS_INFO("%ith dis is %d",i,dis);
-      //   ROS_INFO("%ith Point's best point is %i ",i,best);
-      // }
-    //ROS_INFO("Starting Correspond!!!");
-      // for(int j=max(int(up_jump-up_angle/incre),0);j<=min(int(up_jump+up_angle/incre),n-1); ++j){
-      //     double dis = old_points[j].distToPoint2(&trans_points[i]);
-      //     if(dis<best_dis){
-      //       best_dis = dis;
-      //       best = j;
-      //       second_best = j-1;
-      //       if(second_best == -1){
-      //         second_best = 1;
-      //       }
-      //       last_best = best;
-      //     }
-      //   }
-
-      //   for(int j=max(int(down_jump-down_angle/incre),0);j<min(int(down_jump+down_angle/incre),n-1); ++j){
-      //     double dis = old_points[j].distToPoint2(&trans_points[i]);
-      //     if(dis<best_dis){
-      //       best_dis = dis;
-      //       best = j;
-      //       second_best = j-1;
-      //       if(second_best == -1){
-      //         second_best = 1;
-      //       }
-      //       last_best = best;
-      //     }
-      //   }
-      prev_point_ang = point_ang;
     }
-
-    // int best = 0;
-    // int second_best = best-1;
-    vector <int> BLH = {last_best, last_low_idx, last_high_idx};
-
-
-    index_table_smart.push_back(BLH);
+    last_best = best;
+    second_best = last_best-1;
     best_index_smart.push_back(best);
     c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
-    }
-
   }
+
+}
 
 
 void computeJump(vector< vector<int> >& table, vector<Point>& points){
