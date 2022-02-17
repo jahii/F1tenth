@@ -26,6 +26,9 @@ const float A = (1-MIN_INFO)/MAX_ITER/MAX_ITER;
 const float error_per = 5.0;
 int zero_index_smart=0;
 int zero_index_naive=0;
+int before_naive_time;
+int middle_time;
+int after_smart_time;
 
 
 
@@ -41,6 +44,8 @@ class ScanProcessor {
     vector<Correspondence> corresponds_smart;
     vector<Correspondence> corresponds_naive;
     vector< vector<int> > jump_table;
+    vector< vector<int> > index_table_smart;
+    vector< vector<int> > index_table_naive;
     vector<int> best_index_smart;
     vector<int> best_index_naive;
     Transform prev_trans, curr_trans;
@@ -109,19 +114,25 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
 
+        before_naive_time = ros::Time::now().nsec/100000;
+        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive, index_table_naive);
+        middle_time = ros::Time::now().nsec/100000;
+        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart);
+        after_smart_time = ros::Time::now().nsec/100000;
 
-        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive);
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart);
-        
+
+        ROS_INFO("Naive time: %d",middle_time-before_naive_time);
+        ROS_INFO("Smart time: %d",after_smart_time-middle_time);
   
-        for(int a = 0; a<1080; a++){
-          // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-          if(best_index_smart[a] != best_index_naive[a]){
-            cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<< corresponds_smart[a].p1y <<endl;
-            cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<< corresponds_naive[a].p1y <<endl;
-            cout << " "<< endl;         
-          }
-        }
+        // for(int a = 0; a<1080; a++){
+        //   // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
+        //   if(best_index_smart[a] != best_index_naive[a]){
+        //     cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
+        //     cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
+        //     cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
+        //     cout << " "<< endl;         
+        //   }
+        // }
         
         // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;
         // cout << "10_Naive"<<corresponds_naive[100].pix << " "<< corresponds_naive[100].piy <<endl;

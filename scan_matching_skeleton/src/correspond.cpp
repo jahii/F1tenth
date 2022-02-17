@@ -9,10 +9,15 @@ const int UP_BIG = 1;
 const int DOWN_SMALL = 2;
 const int DOWN_BIG = 3;
 
+const int LAST_BEST_idx=0;
+const int LAST_LOW_idx=1;
+const int LAST_HIGH_idx=2;
+
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive){
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive, vector< vector<int> >& index_table_naive){
       c.clear();
       best_index_naive.clear();
+
 
       int last_best = -1;
       const int n = trans_points.size();
@@ -38,7 +43,7 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
 }
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart){
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart, vector< vector<int> >& index_table_smart){
 
   // Written with inspiration from: https://github.com/AndreaCensi/gpc/blob/master/c/gpc.c
   // use helper functions and structs in transform.h and correspond.h
@@ -51,10 +56,17 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   //Initializecorrespondences
   c.clear();
   best_index_smart.clear();
+  index_table_smart.clear();
+  // index_table_smart[LAST_LOW_idx].clear();
+  // index_table_smart[LAST_HIGH_idx].clear();
+
+
   int last_best = -1;
   double prev_point_ang=-1.0;
   const int m = trans_points.size();
   const int n = old_points.size();
+  int last_low_idx;
+  int last_high_idx;
 
   //ROS_INFO("size of m : %d, size of n: %d",m,n);
   //angle_incre:0.005823
@@ -104,19 +116,23 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       double  last_best_dis = old_points[last_best].distToPoint(&trans_points[i]);
       // double  up_angle =0;
       double  last_angle = 0;
-      if (point_dis*point_dis - last_best_dis*last_best_dis > 0){
-      last_angle =  atan2(last_best_dis, sqrt(point_dis*point_dis - last_best_dis*last_best_dis));
-      // if(last_angle < incre && (i==30 || i==300 || i==500)) ROS_INFO("TOO SMALL in %dth",i);
+      
 
+      if (point_dis*point_dis - last_best_dis*last_best_dis > 0){
+        last_angle =  atan2(last_best_dis, sqrt(point_dis*point_dis - last_best_dis*last_best_dis));
+        // if(last_angle < incre && (i==30 || i==300 || i==500)) ROS_INFO("TOO SMALL in %dth",i);
+        last_low_idx = int((point_ang - last_angle)/incre)-2; //start angle = -3.1415~
+        last_high_idx = int((point_ang + last_angle)/incre)+2;
       }
       else{
-      last_angle = 5*M_PI/6;//3.1415926
+        
+        if (i%10==0) {ROS_INFO("%dth is TOO BIG",i);}
+        // ROS_INFO("point distance : %f, last best distance : %f",point_dis, last_best_dis);
+        last_angle = M_PI;//3.1415926
+        last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
+        last_high_idx = int((point_ang + last_angle)/incre);
       }
       ///////////////////////////////////////////need to change
-
-    
-      int  last_low_idx = int((point_ang - last_angle)/incre)-5; //start angle = -3.1415~
-      int  last_high_idx = int((point_ang + last_angle)/incre)+5;
         if(last_low_idx<0)
         last_low_idx += 1080;
         if(last_high_idx>=n)
@@ -257,17 +273,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         }
         }
         else{
-          for(int j=last_low_idx;j<1080;++j){
-            dis= old_points[j].distToPoint2(&trans_points[i]);
-          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-            }
-          }
           for(int j=0;j<=last_high_idx;++j){
             dis= old_points[j].distToPoint2(&trans_points[i]);
           // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
@@ -279,6 +284,18 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
               last_best=best;
               }
           } 
+          for(int j=last_low_idx;j<1080;++j){
+            dis= old_points[j].distToPoint2(&trans_points[i]);
+          // if(i==30) ROS_INFO("%ith dis is %d",i,dis);
+          if(dis<best_dis){
+            best_dis=dis;
+            best=j;
+            second_best=j-1;
+            if(second_best==-1) second_best=1;
+            last_best=best;
+            }
+          }
+          
         }
 
 
@@ -325,9 +342,12 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
     // int best = 0;
     // int second_best = best-1;
-    
-  best_index_smart.push_back(best);
-  c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
+    vector <int> BLH = {last_best, last_low_idx, last_high_idx};
+
+
+    index_table_smart.push_back(BLH);
+    best_index_smart.push_back(best);
+    c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
     }
 
   }
