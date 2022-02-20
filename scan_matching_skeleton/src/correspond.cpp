@@ -145,14 +145,15 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       //ROS_INFO("%dth point angle-prev_point_ang: %f",i,point_ang-prev_point_ang);
 
       // if(i==30||i==300||i==500)ROS_INFO("%dth last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-      if((last_best < last_low_idx)&&(last_best>last_high_idx)){
-        ROS_INFO("%dth arctan(%f/sqrt(%f^2-%f^2))=%f, point_angle = %f",i, last_best_dis,point_dis,last_best_dis,last_angle, point_ang);
-        ROS_INFO("last_best = %d, last_low_index=%d(point_angle_index)-%d(radius index)=%d, last_high_index=%d",last_best,int(point_ang/incre),int(last_angle/incre),last_low_idx,last_high_idx);
-        ROS_INFO("(last_low_distance,last_best_distance) = (%f, %f)",last_low_dis,last_best_dis);
-        // ROS_INFO("size of m : %d, size of n: %d",m,n);
-        // ROS_INFO("%dth is PROBLEM, last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-        // ROS_INFO("point_angle_index : %d, radius_index : %d point_angle: %f,last_angle: %f",int(point_ang/incre),int(last_angle/incre),point_ang,last_angle);
-      }
+      
+      // if((last_best < last_low_idx)&&(last_best>last_high_idx)){
+      //   ROS_INFO("%dth arctan(%f/sqrt(%f^2-%f^2))=%f, point_angle = %f",i, last_best_dis,point_dis,last_best_dis,last_angle, point_ang);
+      //   ROS_INFO("last_best = %d, last_low_index=%d(point_angle_index)-%d(radius index)=%d, last_high_index=%d",last_best,int(point_ang/incre),int(last_angle/incre),last_low_idx,last_high_idx);
+      //   ROS_INFO("(last_low_distance,last_best_distance) = (%f, %f)",last_low_dis,last_best_dis);
+      //   // ROS_INFO("size of m : %d, size of n: %d",m,n);
+      //   // ROS_INFO("%dth is PROBLEM, last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
+      //   // ROS_INFO("point_angle_index : %d, radius_index : %d point_angle: %f,last_angle: %f",int(point_ang/incre),int(last_angle/incre),point_ang,last_angle);
+      // }
 
 
       //add radius of up_idx

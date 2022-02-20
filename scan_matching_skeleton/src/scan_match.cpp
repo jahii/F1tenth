@@ -127,11 +127,13 @@ class ScanProcessor {
         after_smart_time = ros::Time::now().nsec/100000;
 
         time_msg.naive_time=middle_time-before_naive_time;
+        if(time_msg.naive_time<0) time_msg.naive_time+=10000;
         time_msg.smart_time=after_smart_time-middle_time;
+        if(time_msg.smart_time<0) time_msg.smart_time+=10000;
         time_pub.publish(time_msg);
 
-        ROS_INFO("Naive time: %d",middle_time-before_naive_time);
-        ROS_INFO("Smart time: %d",after_smart_time-middle_time);
+        // ROS_INFO("Naive time: %d",middle_time-before_naive_time);
+        // ROS_INFO("Smart time: %d",after_smart_time-middle_time);
   
         // for(int a = 0; a<1080; a++){
         //   // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){

@@ -14,6 +14,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 find_package(Eigen3)
 
+
+
 ######################################
 # Compile the library >
 ######################################
@@ -59,15 +61,17 @@ if(DEFINED CATKIN_DEVEL_PREFIX)
     std_msgs
     message_generation
     )
-
+  ###########add message by gunhee######
+  add_message_files(FILES mux_idx.msg)
+  ######################################
   generate_messages(
     DEPENDENCIES
     std_msgs
     nav_msgs
     sensor_msgs
     )
-
-
+	
+	
   # Include catkin_libraries
   catkin_package(
       INCLUDE_DIRS include
@@ -99,6 +103,8 @@ if(DEFINED CATKIN_DEVEL_PREFIX)
       DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   )
 endif()
+
+
 
 ######################################
 # < End ROS

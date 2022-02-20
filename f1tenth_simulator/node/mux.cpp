@@ -8,6 +8,8 @@
 #include <sensor_msgs/Joy.h>
 #include <std_msgs/String.h>
 
+
+#include "f1tenth_simulator/mux_idx.h"
 #include "f1tenth_simulator/channel.h"
 
 class Mux {
@@ -24,6 +26,7 @@ private:
 
     // Publish drive data to simulator/car
     ros::Publisher drive_pub;
+    ros::Publisher mux_idx_pub;
 
     // Mux indices
     int joy_mux_idx;
@@ -50,6 +53,7 @@ private:
     double keyboard_speed;
     double keyboard_steer_ang;
 
+    f1tenth_simulator::mux_idx mux_index; 
 
 public:
     Mux() {
@@ -65,6 +69,8 @@ public:
 
         // Make a publisher for drive messages
         drive_pub = n.advertise<ackermann_msgs::AckermannDriveStamped>(drive_topic, 10);
+        mux_idx_pub=n.advertise<f1tenth_simulator::mux_idx>("/mux_idx",1);
+    
 
         // Start a subscriber to listen to mux messages
         mux_sub = n.subscribe(mux_topic, 1, &Mux::mux_callback, this);
@@ -161,6 +167,12 @@ public:
         // reset mux member variable every time it's published
         for (int i = 0; i < mux_size; i++) {
             mux_controller[i] = bool(msg.data[i]);
+            if(msg.data[i]) {
+                ROS_INFO("%dth mux initialize",i);
+                
+                mux_index.mux_idx=i;
+                mux_idx_pub.publish(mux_index);
+            }
         }
 
         // Prints the mux whenever it is changed
@@ -182,6 +194,8 @@ public:
         if (!anything_on) {
             // if no mux channel is active, halt the car
             publish_to_drive(0.0, 0.0);
+            mux_index.mux_idx=0;
+            mux_idx_pub.publish(mux_index);
         }
     }
 

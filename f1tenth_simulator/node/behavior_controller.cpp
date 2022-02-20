@@ -13,6 +13,7 @@
 
 #include "f1tenth_simulator/car_state.hpp"
 #include "f1tenth_simulator/precompute.hpp"
+#include "f1tenth_simulator/mux_idx.h"
 
 using namespace racecar_simulator;
 
@@ -31,6 +32,7 @@ private:
 
     // Publisher for mux controller
     ros::Publisher mux_pub;
+    ros::Publisher collision_detect_pub;
 
     // Mux indices
     int joy_mux_idx;
@@ -102,6 +104,7 @@ public:
 
         // Make a publisher for mux messages
         mux_pub = n.advertise<std_msgs::Int32MultiArray>(mux_topic, 10);
+        collision_detect_pub=n.advertise<f1tenth_simulator::mux_idx>("/collision_detect",1);
 
         // Start subscribers to listen to laser scan, joy, IMU, and odom messages
         laser_sub = n.subscribe(scan_topic, 1, &BehaviorController::laser_callback, this);
@@ -172,6 +175,8 @@ public:
         n.getParam("collision_file", filename);
         collision_file.open(ros::package::getPath("f1tenth_simulator") + "/logs/" + filename + ".txt");
         beginning_seconds = ros::Time::now().toSec();
+    
+
 
     }
 
@@ -226,6 +231,10 @@ public:
                     collision_file << "Angle to obstacle: " << angle << " radians\n";
                     collision_file << "Time since start of sim: " << (ros::Time::now().toSec() - beginning_seconds) << " seconds\n";
                     collision_file << "\n";
+
+                    f1tenth_simulator::mux_idx mux_index;
+                    mux_index.mux_idx=1;
+                    collision_detect_pub.publish(mux_index);
                     return;
                 }
             }
@@ -256,7 +265,7 @@ public:
             publish_mux();
         }
         else {
-            ROS_INFO_STREAM(driver_name << " turned on");
+            ROS_INFO_STREAM(driver_name << " turned on babe");
             change_controller(mux_idx);
         }
     }
