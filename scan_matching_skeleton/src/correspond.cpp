@@ -37,7 +37,7 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
             second_min_index = j-1;
           }
         }
-        best_index_naive.push_back(min_index);
+        // best_index_naive.push_back(min_index);
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
       }
 }
@@ -144,16 +144,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       }
       //ROS_INFO("%dth point angle-prev_point_ang: %f",i,point_ang-prev_point_ang);
 
-      // if(i==30||i==300||i==500)ROS_INFO("%dth last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-      
-      // if((last_best < last_low_idx)&&(last_best>last_high_idx)){
-      //   ROS_INFO("%dth arctan(%f/sqrt(%f^2-%f^2))=%f, point_angle = %f",i, last_best_dis,point_dis,last_best_dis,last_angle, point_ang);
-      //   ROS_INFO("last_best = %d, last_low_index=%d(point_angle_index)-%d(radius index)=%d, last_high_index=%d",last_best,int(point_ang/incre),int(last_angle/incre),last_low_idx,last_high_idx);
-      //   ROS_INFO("(last_low_distance,last_best_distance) = (%f, %f)",last_low_dis,last_best_dis);
-      //   // ROS_INFO("size of m : %d, size of n: %d",m,n);
-      //   // ROS_INFO("%dth is PROBLEM, last best: %d last_low_idx: %d, last_high_idx: %d",i,last_best,last_low_idx,last_high_idx);
-      //   // ROS_INFO("point_angle_index : %d, radius_index : %d point_angle: %f,last_angle: %f",int(point_ang/incre),int(last_angle/incre),point_ang,last_angle);
-      // }
+     
 
 
       //add radius of up_idx
@@ -343,11 +334,11 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
     // int best = 0;
     // int second_best = best-1;
-    vector <int> BLH = {last_best, last_low_idx, last_high_idx};
+    // vector <int> BLH = {last_best, last_low_idx, last_high_idx};
 
 
-    index_table_smart.push_back(BLH);
-    best_index_smart.push_back(best);
+    // index_table_smart.push_back(BLH);
+    // best_index_smart.push_back(best);
     c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
     }
 

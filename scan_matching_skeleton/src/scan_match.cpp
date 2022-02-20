@@ -115,63 +115,16 @@ class ScanProcessor {
       while (count < MAX_ITER && ( icp_correct==false || count==0)) {
         transformPoints(points, curr_trans, transformed_points);
 
-
-
-        //************************************************ Find correspondence between points of the current and previous frames  *************** ////
-        // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
-
-        before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive, index_table_naive);
-        middle_time = ros::Time::now().nsec/100000;
+
         getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart);
-        after_smart_time = ros::Time::now().nsec/100000;
-
-        time_msg.naive_time=middle_time-before_naive_time;
-        if(time_msg.naive_time<0) time_msg.naive_time+=10000;
-        time_msg.smart_time=after_smart_time-middle_time;
-        if(time_msg.smart_time<0) time_msg.smart_time+=10000;
-        time_pub.publish(time_msg);
-
-        // ROS_INFO("Naive time: %d",middle_time-before_naive_time);
-        // ROS_INFO("Smart time: %d",after_smart_time-middle_time);
-  
-        // for(int a = 0; a<1080; a++){
-        //   // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-        //   if(best_index_smart[a] != best_index_naive[a]){
-        //     cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
-        //     cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
-        //     cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
-        //     cout << " "<< endl;         
-        //   }
-        // }
-        
-        // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;
-        // cout << "10_Naive"<<corresponds_naive[100].pix << " "<< corresponds_naive[100].piy <<endl;
-        // cout << "20_N"<<corresponds_smart[200].pix << " "<< corresponds_smart[200].piy <<endl;
-        // cout << "20_Naive"<<corresponds_naive[200].pix << " "<< corresponds_naive[200].piy <<endl;
-        // cout << "30_N"<<corresponds_smart[300].pix << " "<< corresponds_smart[300].piy <<endl;
-        // cout << "30_Naive"<<corresponds_naive[300].pix << " "<< corresponds_naive[300].piy <<endl;
-        // cout << "40_N"<<corresponds_smart[400].pix << " "<< corresponds_smart[400].piy <<endl;
-        // cout << "40_Naive"<<corresponds_naive[400].pix << " "<< corresponds_naive[400].piy <<endl;
 
         prev_trans = curr_trans;
         ++count;
       
-
-        // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds_smart, curr_trans);
         
-        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-
-        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
-        
-
-
       }
-      // ROS_INFO("10th ponint is corresponding to : %f",corresponds[10].pj1);
-      // ROS_INFO("20th ponint is corresponding to : %f",corresponds[20].pj1);
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       points_viz->addPoints(transformed_points, col);
