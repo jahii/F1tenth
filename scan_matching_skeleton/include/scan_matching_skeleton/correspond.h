@@ -87,10 +87,11 @@ struct Correspondence{
 };
 
 void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart, vector< vector<int> >& index_table_smart);
+                       vector<vector<int>>& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart, 
+                       vector<vector<int>>& index_table_smart, vector<vector<double>>& distance_table,vector<int>& start_table,vector<vector<double>>& angle_table);
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive, vector< vector<int> >& index_table_naive);
+                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive, vector< vector<int> >&index_table_naive);
 
 void computeJump(vector< vector<int> >& table, vector<Point>& points);
 
