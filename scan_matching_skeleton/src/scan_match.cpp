@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "ros/ros.h"
+#include <tf2/impl/utils.h>
 #include "sensor_msgs/LaserScan.h"
 #include <geometry_msgs/PoseStamped.h>
 #include "scan_matching_skeleton/correspond.h"
@@ -10,6 +11,7 @@
 #include "scan_matching_skeleton/visualization.h"
 #include <tf/transform_broadcaster.h>
 #include "scan_matching_skeleton/time_pub.h"
+#include "scan_matching_skeleton/car_state.hpp"
 
 
 using namespace std;
@@ -19,6 +21,7 @@ const string& TOPIC_POS = "/scan_match_location";
 const string& TOPIC_RVIZ = "/scan_match_debug";
 const string& FRAME_POINTS = "laser";
 const string& TOPIC_TIME= "/corr_time";
+
 
 const float RANGE_LIMIT = 10.0;
 
@@ -41,6 +44,10 @@ class ScanProcessor {
     ros::Publisher pre_pub;
     ros::Publisher time_pub;
 
+    ros::Subscriber pose_sub;
+    ros::Subscriber pose_rviz_sub;
+    
+
     vector<Point> points;
     vector<Point> transformed_points;
     vector<Point> prev_points;
@@ -62,6 +69,11 @@ class ScanProcessor {
     geometry_msgs::PoseStamped msg;
     Eigen::Matrix3f global_tf;
 
+    double ground_x=0;
+    double ground_y=0;
+    double ground_theta=0;
+    double icp_theta=0;
+
 
     std_msgs::ColorRGBA col;
 
@@ -79,6 +91,10 @@ class ScanProcessor {
       corr_viz = new CorrespondenceVisualizer(marker_pub, "scan_match", FRAME_POINTS);
 
       global_tf = Eigen::Matrix3f::Identity(3,3);
+      // global_tf<< 1, 0, -5, 0, 1, 8.5, 0, 0, 1;
+      
+      pose_sub=n.subscribe("/gt_pose",1,&ScanProcessor::pose_callback,this);
+      // pose_rviz_sub = n.subscribe("/initialpose", 1, &ScanProcessor::pose_rviz_callback, this);
     }
 
     void handleLaserScan(const sensor_msgs::LaserScan::ConstPtr& msg) {
@@ -117,12 +133,19 @@ class ScanProcessor {
 
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive, index_table_naive);
 
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart);
+        //getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart);
 
         prev_trans = curr_trans;
         ++count;
       
-        updateTransform(corresponds_smart, curr_trans);
+        updateTransform(corresponds_naive, curr_trans);
+
+        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+
+        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
+        
         
       }
 
@@ -131,12 +154,15 @@ class ScanProcessor {
       points_viz->publishPoints();
       
 
-      ROS_INFO("Count: %i", count);
-      ROS_INFO("x_error :%f", x_error);
+      // ROS_INFO("Count: %i", count);
+      // ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
-      // publishPos();
+      // cout<<"ground truth"<<" "<<ground_x<<" "<<ground_y<<" "<<ground_theta<<endl;
+      // cout<<"icp_algorithm"<<" "<<global_tf(0,2)<<" "<<global_tf(1,2)<<" "<<icp_theta<<endl;
+
+      publishPos();
       prev_points = points;
     }
 
@@ -177,6 +203,10 @@ class ScanProcessor {
      msg.pose.orientation.y = q.y();
      msg.pose.orientation.z = q.z();
      msg.pose.orientation.w = q.w();
+
+    tf2::Quaternion quat(q.x(),q.y(),q.z(),q.w());
+    icp_theta=tf2::impl::getYaw(quat);
+
      msg.header.frame_id = "laser";
      msg.header.stamp = ros::Time::now();
      pos_pub.publish(msg);
@@ -185,6 +215,24 @@ class ScanProcessor {
      br.sendTransform(tf::StampedTransform(tr, ros::Time::now(), "map", "laser"));
 
     }
+
+    void pose_callback(const geometry_msgs::PoseStamped & msg) {
+        ground_x = msg.pose.position.x;
+        ground_y = msg.pose.position.y;
+        geometry_msgs::Quaternion q = msg.pose.orientation;
+        tf2::Quaternion quat(q.x, q.y, q.z, q.w);
+        ground_theta = tf2::impl::getYaw(quat);
+    }
+
+    // void pose_rviz_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & msg) {
+    //     geometry_msgs::PoseStamped temp_pose;
+    //     temp_pose.header = msg->header;
+    //     temp_pose.pose = msg->pose.pose;
+    //     pose_callback(temp_pose);
+    // }
+
+
+
 
     ~ScanProcessor() {}
 };

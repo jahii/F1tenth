@@ -30,7 +30,7 @@
 #include <iostream>
 #include <math.h>
 
-
+using namespace std;
 using namespace racecar_simulator;
 
 class RacecarSimulator {
@@ -545,6 +545,7 @@ public:
         geometry_msgs::Quaternion q = msg.pose.orientation;
         tf2::Quaternion quat(q.x, q.y, q.z, q.w);
         state.theta = tf2::impl::getYaw(quat);
+        cout<<"ground truth"<<" "<<state.x<<" "<<state.y<<" "<<state.theta<<endl;
     }
 
     void pose_rviz_callback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr & msg) {
@@ -638,6 +639,8 @@ public:
             ts.header.stamp = timestamp;
             ts.header.frame_id = map_frame;
             ts.child_frame_id = base_frame;
+
+            // cout<<state.x<<" "<<state.y<<endl;
 
             // Publish them
             if (broadcast_transform) {

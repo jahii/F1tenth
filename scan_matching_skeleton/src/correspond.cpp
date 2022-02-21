@@ -126,7 +126,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       }
       else{
         
-        if (i%10==0) {ROS_INFO("%dth is TOO BIG",i);}
+        // if (i%10==0) {ROS_INFO("%dth is TOO BIG",i);}
         // ROS_INFO("point distance : %f, last best distance : %f",point_dis, last_best_dis);
         last_angle = M_PI;//3.1415926
         last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
