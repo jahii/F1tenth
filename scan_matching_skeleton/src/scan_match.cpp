@@ -154,8 +154,8 @@ class ScanProcessor {
       points_viz->publishPoints();
       
 
-      // ROS_INFO("Count: %i", count);
-      // ROS_INFO("x_error :%f", x_error);
+      ROS_INFO("Count: %i", count);
+      ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
