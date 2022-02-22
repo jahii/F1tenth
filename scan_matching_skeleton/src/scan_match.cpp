@@ -19,6 +19,7 @@ const string& TOPIC_RVIZ = "/scan_match_debug";
 const string& FRAME_POINTS = "laser";
 
 const float RANGE_LIMIT = 10.0;
+float error_per=5.0;
 
 const float MAX_ITER = 2.0;
 const float MIN_INFO = 0.1;
@@ -78,8 +79,12 @@ class ScanProcessor {
       ROS_INFO("Starting Optimization");
 
       curr_trans = Transform();
+      bool icp_correct=false;
+      double x_error=0.0;
+      double y_error=0.0;
+      double theta_error=0.0;
 
-      while (count < MAX_ITER && (curr_trans != prev_trans || count==0)) {
+      while (count < MAX_ITER && ( icp_correct==false || count==0))  {
         transformPoints(points, curr_trans, transformed_points);
 
 
@@ -104,17 +109,25 @@ class ScanProcessor {
 
         prev_trans = curr_trans;
         ++count;
+        
 
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds, curr_trans);
 
+        x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+        theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
+
+        if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
       }
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       points_viz->addPoints(transformed_points, col);
       points_viz->publishPoints();
 
-      ROS_INFO("Count: %i", count);
+      
+      ROS_INFO("Count shot: %i", count);
+      ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
