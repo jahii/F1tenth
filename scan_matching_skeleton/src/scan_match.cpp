@@ -90,8 +90,9 @@ class ScanProcessor {
       
       corr_viz = new CorrespondenceVisualizer(marker_pub, "scan_match", FRAME_POINTS);
 
-      global_tf = Eigen::Matrix3f::Identity(3,3);
+       global_tf = Eigen::Matrix3f::Identity(3,3);
       // global_tf<< 1, 0, -5, 0, 1, 8.5, 0, 0, 1;
+      //global_tf<< -5, 8.5,  1;
       
       pose_sub=n.subscribe("/gt_pose",1,&ScanProcessor::pose_callback,this);
       // pose_rviz_sub = n.subscribe("/initialpose", 1, &ScanProcessor::pose_rviz_callback, this);
@@ -159,8 +160,8 @@ class ScanProcessor {
 
       this->global_tf = global_tf * curr_trans.getMatrix();
 
-      // cout<<"ground truth"<<" "<<ground_x<<" "<<ground_y<<" "<<ground_theta<<endl;
-      // cout<<"icp_algorithm"<<" "<<global_tf(0,2)<<" "<<global_tf(1,2)<<" "<<icp_theta<<endl;
+      //cout<<"ground truth"<<" "<<ground_x<<" "<<ground_y<<" "<<ground_theta<<endl;
+      cout<<"icp_algorithm"<<" "<<global_tf(0,2)<<" "<<global_tf(1,2)<<" "<<icp_theta<<endl;
 
       publishPos();
       prev_points = points;
