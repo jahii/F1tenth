@@ -92,7 +92,7 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
 
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
+        //getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO,msg->angle_increment);
         //
         // cout << "0_N"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_N"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
@@ -100,7 +100,7 @@ class ScanProcessor {
         // cout << "30_N"<<corresponds[300].pix << " "<< corresponds[30].piy <<endl;
         // cout << "40_N"<<corresponds[400].pix << " "<< corresponds[40].piy <<endl;
         //
-        // getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
+         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds, A*count*count+MIN_INFO);
         // cout << "0_Naive"<<corresponds[0].pix << " "<< corresponds[0].piy <<endl;
         // cout << "10_Naive"<<corresponds[100].pix << " "<< corresponds[10].piy <<endl;
         // cout << "20_Naive"<<corresponds[200].pix << " "<< corresponds[20].piy <<endl;
@@ -126,7 +126,7 @@ class ScanProcessor {
       points_viz->publishPoints();
 
       
-      ROS_INFO("Count shot: %i", count);
+      ROS_INFO("Count sho1t: %i", count);
       ROS_INFO("x_error :%f", x_error);
 
       this->global_tf = global_tf * curr_trans.getMatrix();
