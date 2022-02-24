@@ -97,23 +97,22 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   int last_low_idx;
   int last_high_idx;
   vector <int> up_to_down;
-  vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1};
+  vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1};
   
   
 
   for(int i = 0; i<m; ++i){
     up_to_down.clear();
     debugs[OUT_RANGE]=-1;
-    
     double best_dis = 10000000.00;
     int best = -1;
     int second_best = -1;
     double  point_dis = trans_points[i].r; debugs[POINT_DIST]=point_dis;
     double  point_ang = trans_points[i].theta+M_PI; 
 
-    int start_index = int(point_ang/incre);
+    int start_index = round(point_ang/incre);
     start_table.push_back(start_index);
-    int we_start_at = (last_best!=-1)? (last_best) : start_index; //last_best+1 
+    int we_start_at = (last_best!=-1)? (last_best+1) : start_index; //last_best+1 
 
     int up_check = we_start_at+1;
     int down_check = we_start_at;
@@ -125,6 +124,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     // ROS_INFO("%dth scan",i);
     up_to_down.push_back(last_best);
     int count = 0;
+    bool up_out = false;
+    bool down_out = false;
 
 
     while(!(up_stopped && down_stopped)){
@@ -138,8 +139,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
       if(now_up){
         up_to_down.push_back(up_check);
-        if(up_check >= n){up_check=0;debugs[OUT_RANGE]=1;continue;}
-        if(up_check == 10){up_stopped=true; continue;}
+        if(!up_out&&(up_check >= n)){
+          up_out = true;
+          up_check = 0;
+          debugs[OUT_RANGE]=1;continue;
+          }
+        if(up_out&&(up_check>we_start_at)){
+          up_stopped=true; continue;}
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
         if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;}
         if(up_check>start_index){
@@ -147,8 +153,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           double min_dist_up = abs(sin(del_theta_up)*point_dis);
           if(pow(min_dist_up,2)>best_dis){
             up_stopped=true; 
-            debugs[MIN_DIST_UP]=min_dist_up; debugs[SIN_UP]=abs(sin(del_theta_up));debugs[BEST_DIST_UP]=best_dis;
-            debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
+            // debugs[MIN_DIST_UP]=min_dist_up; debugs[SIN_UP]=abs(sin(del_theta_up));debugs[BEST_DIST_UP]=best_dis;
+            // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
             continue;
           }
           if(old_points[up_check].r<point_dis){up_check = jump_table[up_check][UP_BIG];
@@ -158,8 +164,12 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         }
       }else{
         up_to_down.push_back(down_check);
-        if(down_check < 0){down_check=1079;debugs[OUT_RANGE]=1; continue;}
-        if(down_check == 1060){down_stopped=true; continue;}
+        if(!down_out&&(down_check < 0)){
+          down_out=true;
+          down_check=1079;
+          debugs[OUT_RANGE]=1;continue;}
+        if(down_out&&(down_check<(we_start_at+1))){
+          down_stopped=true; continue;}
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
         if(last_dist_down<best_dis) {best = down_check; best_dis = last_dist_down;}
         if(down_check<start_index){
@@ -167,9 +177,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           double min_dist_down = abs(sin(del_theta_down)*point_dis);
           if(pow(min_dist_down,2)>best_dis){
             down_stopped=true; 
-            debugs[MIN_DIST_DOWN]=min_dist_down; debugs[SIN_DOWN]=abs(sin(del_theta_down)); debugs[BEST_DIST_DOWN]=best_dis;
-            debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
-
+            // debugs[MIN_DIST_DOWN]=min_dist_down; debugs[SIN_DOWN]=abs(sin(del_theta_down)); debugs[BEST_DIST_DOWN]=best_dis;
+            // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
           }
           if(old_points[down_check].r<point_dis){down_check = jump_table[down_check][DOWN_BIG];
@@ -180,10 +189,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       }
     }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
-    debugs[DISTANCE_TO_BEST_SEC]=old_points[best-2].distToPoint2(&trans_points[i]);
+    // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
     last_best = best;
     second_best = last_best-1;
-    if (second_best <=-1) second_best = 1;
+    if(second_best<0){second_best=last_best+1;}
     best_index_smart.push_back(best);
 
     debugging_table.push_back(debugs);
@@ -200,7 +209,7 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
   for(int i = 0; i<n; ++i){
     vector<int> v = {n,n,-1,-1};
     for(int j = i+1; j<n; ++j){
-      if(points[j].r<=points[i].r){
+      if(points[j].r<points[i].r){
         v[UP_SMALL] = j;
         break;
       }
@@ -215,7 +224,7 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
       // }
     }
     for(int j = i+1; j<n; ++j){
-      if(points[j].r>=points[i].r){
+      if(points[j].r>points[i].r){
         v[UP_BIG] = j;
         break;
       }
