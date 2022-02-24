@@ -144,7 +144,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = 0;
           debugs[OUT_RANGE]=1;continue;
           }
-        if(up_out&&(up_check>we_start_at)){
+        if(up_out&&(up_check>=we_start_at)){
           up_stopped=true; continue;}
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
         if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;}
@@ -158,7 +158,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             continue;
           }
           if(old_points[up_check].r<point_dis){up_check = jump_table[up_check][UP_BIG];
-          }else{up_check = jump_table[up_check][UP_SMALL];}
+          }else if(old_points[up_check].r>point_dis){up_check = jump_table[up_check][UP_SMALL];
+          }else{up_check++;}
         }else{
           up_check++;
         }
@@ -168,7 +169,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           down_out=true;
           down_check=1079;
           debugs[OUT_RANGE]=1;continue;}
-        if(down_out&&(down_check<(we_start_at+1))){
+        if(down_out&&(down_check<=(we_start_at+1))){
           down_stopped=true; continue;}
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
         if(last_dist_down<best_dis) {best = down_check; best_dis = last_dist_down;}
@@ -182,7 +183,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             continue;
           }
           if(old_points[down_check].r<point_dis){down_check = jump_table[down_check][DOWN_BIG];
-          }else{down_check = jump_table[down_check][DOWN_SMALL];}
+          }else if(old_points[down_check].r>point_dis){down_check = jump_table[down_check][DOWN_SMALL];
+          }else{down_check--;}
         }else{
           down_check--;
         }
