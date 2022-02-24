@@ -94,14 +94,14 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
   int last_best = -1;
   double prev_point_ang=-1.0;
+  
   const int m = trans_points.size();
   const int n = old_points.size();
   int last_low_idx;
   int last_high_idx;
   vector <int> up_to_down;
   vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1};
-  
-  
+
 
   for(int i = 0; i<m; ++i){
     up_to_down.clear();
@@ -110,7 +110,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     int best = -1;
     int second_best = -1;
     double  point_dis = trans_points[i].r; debugs[POINT_DIST]=point_dis;
-    double  point_ang = trans_points[i].theta+M_PI; 
+    double  point_ang = trans_points[i].theta+M_PI;
+    double theta_jump =-1;
 
     int start_index = round(point_ang/incre);
     start_table.push_back(start_index);
@@ -159,9 +160,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
             continue;
           }
-          if(old_points[up_check].r<point_dis){
+          theta_jump=acos((last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r));
+          if(theta_jump>0.5*M_PI){
             up_check = jump_table[up_check][UP_BIG];
-          }else if(old_points[up_check].r>point_dis){
+          }else if(theta_jump<0.5*M_PI){
             up_check = jump_table[up_check][UP_SMALL];
           }else{up_check++;}
         }
@@ -187,9 +189,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
           }
-          if(old_points[down_check].r<point_dis){
+          theta_jump=acos((last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r));
+          if(theta_jump>0.5*M_PI){
             down_check = jump_table[down_check][DOWN_BIG];
-          }else if(old_points[down_check].r>point_dis){
+          }else if(theta_jump<0.5*M_PI){
             down_check = jump_table[down_check][DOWN_SMALL];
           }else{down_check--;}
 

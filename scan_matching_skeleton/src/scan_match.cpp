@@ -164,10 +164,7 @@ class ScanProcessor {
             printf("Smart best distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST]);
             cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
             cout<<"point_dis: "<<transformed_points[a].r<<" naive_best+1_dis: "<<prev_points[best_index_naive[a]+1].r<<endl;
-            cout<<"naive_best_dis: "<<prev_points[best_index_naive[a]].r<<endl;
-            cout<<"naive_best-1_dis: "<<prev_points[best_index_naive[a]-1].r<<endl;
-            cout<<"naive_best-2_dis: "<<prev_points[best_index_naive[a]-2].r<<endl;
-            cout<<"naive_best-3_dis: "<<prev_points[best_index_naive[a]-3].r<<endl;
+            
             // printf("Smart best-1 distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST_SEC]);
             
             // cout << "Naive best distance : "<<debugging_table_naive[a][MIN_DIST_NAIVE]<<endl;
