@@ -32,7 +32,7 @@ const int OUT_RANGE=13;
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
-
+const int MIN_DIST_NAIVEPlus1=1;
 
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
@@ -61,8 +61,10 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
             min_index = j;
             second_min_index = j-1;
             debugs[MIN_DIST_NAIVE]=dist;
+            
           }
         }
+        // ebugs[MIN_DIST_NAIVEPlus1]=d
         debugging_table_naive.push_back(debugs);
         best_index_naive.push_back(min_index);
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
@@ -157,10 +159,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
             continue;
           }
-          if(old_points[up_check].r<point_dis){up_check = jump_table[up_check][UP_BIG];
-          }else if(old_points[up_check].r>point_dis){up_check = jump_table[up_check][UP_SMALL];
+          if(old_points[up_check].r<point_dis){
+            up_check = jump_table[up_check][UP_BIG];
+          }else if(old_points[up_check].r>point_dis){
+            up_check = jump_table[up_check][UP_SMALL];
           }else{up_check++;}
-        }else{
+        }
+        else{
           up_check++;
         }
       }else{
@@ -182,14 +187,19 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
           }
-          if(old_points[down_check].r<point_dis){down_check = jump_table[down_check][DOWN_BIG];
-          }else if(old_points[down_check].r>point_dis){down_check = jump_table[down_check][DOWN_SMALL];
+          if(old_points[down_check].r<point_dis){
+            down_check = jump_table[down_check][DOWN_BIG];
+          }else if(old_points[down_check].r>point_dis){
+            down_check = jump_table[down_check][DOWN_SMALL];
           }else{down_check--;}
-        }else{
+
+          
+        }
+          else{
           down_check--;
         }
       }
-    }
+      }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
     // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
     last_best = best;
@@ -200,8 +210,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     debugging_table.push_back(debugs);
     index_table_smart.push_back(up_to_down);
     c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
+  
   }
-
 }
 
 
@@ -226,7 +236,7 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
       // }
     }
     for(int j = i+1; j<n; ++j){
-      if(points[j].r>points[i].r){
+      if(points[j].r>=points[i].r){
         v[UP_BIG] = j;
         break;
       }
@@ -241,7 +251,7 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
       // }
     }
     for(int j = i-1; j>=0; --j){
-      if(points[j].r<points[i].r){
+      if(points[j].r<=points[i].r){
         v[DOWN_SMALL] = j;
         break;
       }
@@ -256,7 +266,7 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
       // }
     }
     for(int j = i-1; j>=0; --j){
-      if(points[j].r>points[i].r){
+      if(points[j].r>=points[i].r){
         v[DOWN_BIG] = j;
         break;
       }

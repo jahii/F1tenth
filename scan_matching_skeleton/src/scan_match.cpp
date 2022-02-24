@@ -162,13 +162,18 @@ class ScanProcessor {
             // printf("DOWN EQ : %.10f(best_dis)<%.10f={%f(min_dist_down)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_DOWN],debugging_table[a][MIN_DIST_DOWN_SQUARE],debugging_table[a][MIN_DIST_DOWN],debugging_table[a][DOWN_DELTA],debugging_table[a][SIN_DOWN],debugging_table[a][POINT_DIST]);
             printf("Naive best distance :%.30f \n",debugging_table_naive[a][MIN_DIST_NAIVE]);
             printf("Smart best distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST]);
-            cout << endl;
+            cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
+            cout<<"point_dis: "<<transformed_points[a].r<<" naive_best+1_dis: "<<prev_points[best_index_naive[a]+1].r<<endl;
+            cout<<"naive_best_dis: "<<prev_points[best_index_naive[a]].r<<endl;
+            cout<<"naive_best-1_dis: "<<prev_points[best_index_naive[a]-1].r<<endl;
+            cout<<"naive_best-2_dis: "<<prev_points[best_index_naive[a]-2].r<<endl;
+            cout<<"naive_best-3_dis: "<<prev_points[best_index_naive[a]-3].r<<endl;
             // printf("Smart best-1 distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST_SEC]);
             
             // cout << "Naive best distance : "<<debugging_table_naive[a][MIN_DIST_NAIVE]<<endl;
             // cout << "Smart best distance : "<<debugging_table[a][DISTANCE_TO_BEST]<<endl;
             // cout << "Smart best-1 distance : "<<debugging_table[a][DISTANCE_TO_BEST_SEC]<<endl;
-            // cout << "start_index : "<<start_table[a]<<endl<<endl;
+            cout << "start_index : "<<start_table[a]<<endl<<endl;
             
           }
         }
@@ -202,8 +207,8 @@ class ScanProcessor {
       // ROS_INFO("20th ponint is corresponding to : %f",corresponds[20].pj1);
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
-      points_viz->addPoints(transformed_points, col);
-      points_viz->publishPoints();
+      // points_viz->addPoints(transformed_points, col);
+      // points_viz->publishPoints();
       
 
       ROS_INFO("Count: %i", count);
@@ -228,7 +233,7 @@ class ScanProcessor {
       points.clear();
 
       for (int i = 0; i < ranges.size(); ++i) {
-        float range = (1+0.001*rand()/RAND_MAX)*ranges.at(i); // add noise
+        float range = ranges.at(i); // add noise float(1+3*(float(rand()/RAND_MAX)))*
         if (!isnan(range)&&range > RANGE_LIMIT) {
           points.push_back(Point(RANGE_LIMIT, angle_min + angle_increment * i));
           continue;
