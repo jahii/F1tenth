@@ -59,8 +59,8 @@ class ScanProcessor {
     vector<int> best_index_smart;
     vector<int> best_index_naive;
     Transform prev_trans, curr_trans;
-    tf::TransformBroadcaster br;
-    tf::Transform tr;
+    // tf::TransformBroadcaster br;
+    // tf::Transform tr;
 
     PointVisualizer* points_viz;
     PointVisualizer* prepoints_viz;
@@ -68,11 +68,26 @@ class ScanProcessor {
 
     geometry_msgs::PoseStamped msg;
     Eigen::Matrix3f global_tf;
+    Eigen::Matrix3f finished_tf;
+    Eigen::Vector3f pose_update;
+    Eigen::Matrix3f roto_translation_mat;
+    Eigen::Vector3f curr_matrix;
+    Eigen::Vector3f new_pose;
 
     double ground_x=0;
     double ground_y=0;
     double ground_theta=0;
     double icp_theta=0;
+    float initial_pose_x=-5;
+    float initial_pose_y=8.5;
+    float x_old=-1;
+    float y_old=-1;
+    float x_pose;
+    float y_pose;
+    float x_increase;
+    float y_increase;
+    float theta_update;
+    
 
 
     std_msgs::ColorRGBA col;
@@ -90,9 +105,15 @@ class ScanProcessor {
       
       corr_viz = new CorrespondenceVisualizer(marker_pub, "scan_match", FRAME_POINTS);
 
-       global_tf = Eigen::Matrix3f::Identity(3,3);
+      global_tf = Eigen::Matrix3f::Identity(3,3);
+       
       // global_tf<< 1, 0, -5, 0, 1, 8.5, 0, 0, 1;
-      //global_tf<< -5, 8.5,  1;
+      pose_update<< -5, 8.5,  1;
+      x_pose=-5;
+      y_pose=8.5;
+      
+      // x_increase=0;
+      // y_increase=0;
       
       pose_sub=n.subscribe("/gt_pose",1,&ScanProcessor::pose_callback,this);
       // pose_rviz_sub = n.subscribe("/initialpose", 1, &ScanProcessor::pose_rviz_callback, this);
@@ -121,14 +142,17 @@ class ScanProcessor {
       float y_error=0.0;
       float theta_error=0.0;
       bool icp_correct=false;
+      
 
       scan_matching_skeleton::time_pub time_msg;
 
       computeJump(jump_table, prev_points);
       // ROS_INFO("Starting Optimization!!!");
+      finished_tf = Eigen::Matrix3f::Identity(3,3);
 
       curr_trans = Transform();
-
+      curr_matrix<<0,0,0;
+      theta_update=0.0;
       while (count < MAX_ITER && ( icp_correct==false || count==0)) {
         transformPoints(points, curr_trans, transformed_points);
 
@@ -144,8 +168,24 @@ class ScanProcessor {
         x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
         y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
         theta_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
-
+        
         if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
+        
+        //this->finished_tf=curr_trans.getMatrix()*finished_tf;
+
+        curr_matrix(0)+=curr_trans.x_disp;
+        curr_matrix(1)+=curr_trans.y_disp;
+        theta_update=atan2(curr_matrix(1),curr_matrix(0));
+        while(theta_update>M_PI) theta_update-=2*M_PI;
+        while(theta_update<M_PI) theta_update+=2*M_PI;
+        curr_matrix(2)=theta_update;
+        
+
+
+        cout<<count<<"th curr_trans_x is "<<curr_trans.x_disp<<" "<<ground_x<<endl;
+        cout<<count<<"th update_trans_x is"<<curr_matrix(0)<<endl;
+
+
         
         
       }
@@ -154,16 +194,34 @@ class ScanProcessor {
       points_viz->addPoints(transformed_points, col);
       points_viz->publishPoints();
       
-
+      
       ROS_INFO("Count: %i", count);
       ROS_INFO("x_error :%f", x_error);
 
-      this->global_tf = global_tf * curr_trans.getMatrix();
 
-      //cout<<"ground truth"<<" "<<ground_x<<" "<<ground_y<<" "<<ground_theta<<endl;
-      cout<<"icp_algorithm"<<" "<<global_tf(0,2)<<" "<<global_tf(1,2)<<" "<<icp_theta<<endl;
+      // if(x_old ==-1) x_old=initial_pose_x;
+      // if(y_old ==-1) y_old=initial_pose_y;
+      
+      // roto_translation_mat << cos(ground_theta),-sin(ground_theta),x_old,sin(ground_theta),cos(ground_theta),y_old,0,0,1;
+      // curr_matrix << curr_matrix(0),curr_matrix(1),1;
+      // this->pose_update=roto_translation_mat*curr_matrix;
+      // x_old=pose_update(0);
+      // y_old=pose_update(1);
 
-      publishPos();
+      // this->x_pose=x_pose+global_tf(0,2);
+      // this->y_pose=y_pose+global_tf(1,2);
+      // cout<<x_pose<<" "<< y_pose<<endl;
+
+      // // this->pose_update=finished_tf*pose_update;
+      // this->global_tf = global_tf * curr_trans.getMatrix();
+      // if(curr_trans.x_disp>0) cout<<"curr_trans.x_disp"<<curr_trans.x_disp<<endl;
+      //  cout<<curr_trans.x_disp<<" "<<curr_trans.y_disp<<" "<<curr_trans.theta_rot<<" "<<ground_theta<<endl;
+      // cout<<"ground truth"<<" "<<ground_x<<" "<<ground_y<<" "<<endl;
+      // cout<<"trans_x is"<<curr_matrix(0)<<endl;
+      // cout<<"icp_algorithm"<<" "<<pose_update(0)<<" "<<pose_update(1)<<endl;
+      
+      //publishPos();
+      posetest();
       prev_points = points;
     }
 
@@ -211,12 +269,31 @@ class ScanProcessor {
      msg.header.frame_id = "laser";
      msg.header.stamp = ros::Time::now();
      pos_pub.publish(msg);
-     tr.setOrigin(tf::Vector3(global_tf(0,2), global_tf(1,2), 0));
-     tr.setRotation(q);
-     br.sendTransform(tf::StampedTransform(tr, ros::Time::now(), "map", "laser"));
+    //  tr.setOrigin(tf::Vector3(global_tf(0,2), global_tf(1,2), 0));
+    //  tr.setRotation(q);
+    //  br.sendTransform(tf::StampedTransform(tr, ros::Time::now(), "map", "laser"));
 
     }
 
+    
+    void posetest(){
+      msg.pose.position.x = x_increase; 
+      msg.pose.position.y = y_increase;
+
+      msg.pose.orientation.x = 1;
+      msg.pose.orientation.y = 1;
+      msg.pose.orientation.z = 1;
+      msg.pose.orientation.w = 0;
+
+      msg.header.frame_id = "laser";
+      msg.header.stamp = ros::Time::now();
+      pos_pub.publish(msg);
+    }
+    
+    
+    
+    
+    
     void pose_callback(const geometry_msgs::PoseStamped & msg) {
         ground_x = msg.pose.position.x;
         ground_y = msg.pose.position.y;
