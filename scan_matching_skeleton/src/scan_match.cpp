@@ -48,7 +48,7 @@ const int OUT_RANGE=13;
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
-
+const int MIN_DIST_NAIVEPlus1=1;
 
 
 class ScanProcessor {
@@ -171,6 +171,7 @@ class ScanProcessor {
             // cout << "Smart best distance : "<<debugging_table[a][DISTANCE_TO_BEST]<<endl;
             // cout << "Smart best-1 distance : "<<debugging_table[a][DISTANCE_TO_BEST_SEC]<<endl;
             cout << "start_index : "<<start_table[a]<<endl<<endl;
+            cout<<"naive+1 theta: "<<debugging_table_naive[a][MIN_DIST_NAIVEPlus1]<<endl;
             
           }
         }
