@@ -118,21 +118,20 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     double  point_ang = trans_points[i].theta+M_PI;
     double theta_jump =-1;
 
-    int start_index = round(point_ang/incre);
+    int start_index = int(point_ang/incre);
     start_table.push_back(start_index);
-    int we_start_at = (last_best!=-1)? (last_best+1) : start_index; //last_best+1 
-   
+    //int we_start_at = (last_best!=-1)? (last_best+1) : start_index; //last_best+1 
+    int we_start_at = start_index; 
 
-    int up_check = start_index+1;
-    int down_check = start_index;
+    int up_check = we_start_at+1;
+    int down_check = we_start_at;
     if(up_check==1080) up_check--;
     // if(down_check==-1) down_check++;
 
     double last_dist_up = -1;
     double last_dist_down = -2;
-
+    double del_theta_down = -1;
     double del_theta_up=-1;
-    double del_theta_down=-1;
 
     bool up_stopped=false, down_stopped=false;
     // ROS_INFO("%dth scan",i);
@@ -141,10 +140,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     bool up_out = false;
     bool down_out = false;
     bool last_best_check=false;
-    bool up_start=false;
-
-    if(last_best>start_index)  up_start=true;
-
 
     while(!(up_stopped && down_stopped)){
       
@@ -162,18 +157,16 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_out = true;
           up_check = 0;
           debugs[OUT_RANGE]=1;continue;
-          }
-
-        if(up_out&&(up_check>down_check)){
-          up_stopped=true; continue;}
-
+        }
+        if(up_out&&(up_check>start_index)){
+          up_stopped=true; continue;
+        }
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
+        if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;} 
 
-        if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;}
-
-
-        if(point_ang<=up_check*incre) del_theta_up = abs(up_check*incre-point_ang)>=0.5*M_PI ? 0.5*M_PI : up_check*incre-point_ang; 
-        else del_theta_up = (up_check*incre+(2*M_PI-point_ang))>=0.5*M_PI ? 0.5*M_PI : up_check*incre+(2*M_PI-point_ang);
+        del_theta_up = abs(point_ang-(up_check)*incre);
+        if(del_theta_up > M_PI){del_theta_up = 2*M_PI-del_theta_up;}
+        del_theta_up = del_theta_up>=0.5*M_PI ? 0.5*M_PI : del_theta_up;
 
         double min_dist_up = abs(sin(del_theta_up)*point_dis);
         if(pow(min_dist_up,2)>best_dis){
@@ -184,54 +177,46 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         }
 
         theta_jump=acos((last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r));
-
         if(theta_jump>0.5*M_PI){
           up_check = jump_table[up_check][UP_BIG];
         }else if(theta_jump<0.5*M_PI){
           up_check = jump_table[up_check][UP_SMALL];
         }else{up_check++;}
-        
-      }else{
+
+      }else{ // !now_up
         up_to_down.push_back(down_check);
+
         if(!down_out&&(down_check < 0)){
           down_out=true;
           down_check=1079;
-          debugs[OUT_RANGE]=1;continue;}
-        
-        if(down_out&&(down_check<up_check)){
-          down_stopped=true; continue;}
-
-        // if(last_best_check==false){
-        //   last_dist_down=old_points[last_best].distToPoint2(&trans_points[i]);
-        //   last_best_check=true; continue;}
+          debugs[OUT_RANGE]=1;continue;
+        }
+        if(down_out&&(down_check<start_index)){
+          down_stopped=true; continue;
+        }
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
-
         if(last_dist_down<=best_dis) {best = down_check; best_dis = last_dist_down;}
-      
-        if(point_ang>=down_check*incre) del_theta_down = abs(point_ang-(down_check)*incre)>=0.5*M_PI ? 0.5*M_PI : point_ang-(down_check)*incre; 
-        else if(point_ang<down_check*incre) del_theta_down = (point_ang+(2*M_PI-down_check*incre))>=0.5*M_PI ? 0.5*M_PI : point_ang+(2*M_PI-down_check*incre);
+
+        del_theta_down = abs(point_ang-(down_check)*incre);
+        if(del_theta_down > M_PI){del_theta_down = 2*M_PI-del_theta_down;}
+        del_theta_down = del_theta_down>=0.5*M_PI ? 0.5*M_PI : del_theta_down;
 
         double min_dist_down = abs(sin(del_theta_down)*point_dis);
-        if(down_check==last_best){
-          cout<<"mid_dist_down: "<<min_dist_down<< " best_dis"<<best_dis<<endl;
-        }
         if(pow(min_dist_down,2)>best_dis){
             down_stopped=true; 
-
             // debugs[MIN_DIST_DOWN]=min_dist_down; debugs[SIN_DOWN]=abs(sin(del_theta_down)); debugs[BEST_DIST_DOWN]=best_dis;
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
         }
-        theta_jump=acos((last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r));
 
+        theta_jump=acos((last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r));
         if(theta_jump>0.5*M_PI){
           down_check = jump_table[down_check][DOWN_BIG];
         }else if(theta_jump<0.5*M_PI){
           down_check = jump_table[down_check][DOWN_SMALL];
         }else{down_check--;}
-
       }
-      }
+    }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
     // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
     last_best = best;
