@@ -173,7 +173,7 @@ class ScanProcessor {
             cout<<"naive+1 theta: "<<debugging_table_naive[a][MIN_DIST_NAIVEPlus1]<<endl;
             cout << "start_index : "<<start_table[a]<<endl<<endl;
           }
-          if(index_table_smart[a].size()>500){
+          if(index_table_smart[a].size()>300){
             for(int b = 0; b<index_table_smart[a].size(); b++){
               cout << index_table_smart[a][b]<<" ";
             }

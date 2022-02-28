@@ -175,14 +175,18 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
           continue;
         }
+        double inverse_val = (last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r);
+        if(inverse_val<-1){inverse_val=-1;}
+        else if(inverse_val>1){inverse_val=1;}
 
-        theta_jump=acos((last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r));
+
+        theta_jump=acos(inverse_val);
         if(theta_jump>0.5*M_PI){
           up_check = jump_table[up_check][UP_BIG];
         }else if(theta_jump<0.5*M_PI){
           up_check = jump_table[up_check][UP_SMALL];
-        }else{up_check++;}
-
+        }else{ROS_INFO("last_dist_up : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
+        last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
       }else{ // !now_up
         up_to_down.push_back(down_check);
 
@@ -208,13 +212,17 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
         }
+        double inverse_val = (last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r);
+        if(inverse_val<-1){inverse_val=-1;}
+        else if(inverse_val>1){inverse_val=1;}
 
-        theta_jump=acos((last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r));
+        theta_jump=acos(inverse_val);
         if(theta_jump>0.5*M_PI){
           down_check = jump_table[down_check][DOWN_BIG];
         }else if(theta_jump<0.5*M_PI){
           down_check = jump_table[down_check][DOWN_SMALL];
-        }else{down_check--;}
+        }else{ROS_INFO("last_dist_down : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
+        last_dist_down, pow(old_points[down_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_down)*old_points[down_check].r);}
       }
     }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
