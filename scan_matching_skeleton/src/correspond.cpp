@@ -150,8 +150,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
       // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
 
-      if(now_up){
-        up_to_down.push_back(up_check);
+      if(now_up){up_to_down.push_back(up_check);
 
         if(!up_out&&(up_check >= n)){
           up_out = true;
@@ -161,6 +160,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         if(up_out&&(up_check>start_index)){
           up_stopped=true; continue;
         }
+
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
         if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;} 
 
@@ -175,11 +175,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
           continue;
         }
+
         double inverse_val = (last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r);
         if(inverse_val<-1){inverse_val=-1;}
         else if(inverse_val>1){inverse_val=1;}
-
-
         theta_jump=acos(inverse_val);
         if(theta_jump>0.5*M_PI){
           up_check = jump_table[up_check][UP_BIG];
@@ -187,8 +186,11 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = jump_table[up_check][UP_SMALL];
         }else{ROS_INFO("last_dist_up : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
-      }else{ // !now_up
-        up_to_down.push_back(down_check);
+      }
+
+
+      //!now_up
+      else{up_to_down.push_back(down_check);
 
         if(!down_out&&(down_check < 0)){
           down_out=true;
@@ -198,6 +200,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         if(down_out&&(down_check<start_index)){
           down_stopped=true; continue;
         }
+        
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
         if(last_dist_down<=best_dis) {best = down_check; best_dis = last_dist_down;}
 
@@ -212,10 +215,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
         }
+
         double inverse_val = (last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r);
         if(inverse_val<-1){inverse_val=-1;}
         else if(inverse_val>1){inverse_val=1;}
-
         theta_jump=acos(inverse_val);
         if(theta_jump>0.5*M_PI){
           down_check = jump_table[down_check][DOWN_BIG];
