@@ -124,13 +124,12 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     int opposite_start_index = start_index+540 > 1079 ? start_index-540:start_index+540;
 
     start_table.push_back(start_index);
-    //int we_start_at = (last_best!=-1)? (last_best+1) : start_index; //last_best+1 
     int we_start_at = start_index; 
 
     int up_check = we_start_at+1;
     int down_check = we_start_at;
     if(up_check==1080) up_check--;
-    // if(down_check==-1) down_check++;
+ 
 
     double last_dist_up = -1;
     double last_dist_down = -2;
@@ -138,7 +137,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     double del_theta_up=-1;
 
     bool up_stopped=false, down_stopped=false;
-    // ROS_INFO("%dth scan",i);
+
     up_to_down.push_back(last_best);
     int count = 0;
     bool up_out = false;
@@ -148,15 +147,10 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
 
     while(!(up_stopped && down_stopped)){
 
-      // bool now_up = !up_stopped;
+
       bool now_up = up_stopped ? 0 :
                   down_stopped ? 1 : last_dist_up<last_dist_down;
-      // ROS_INFO("now up : %s",  now_up? "true" : "false");
-      // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
-      // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
-      // if(up_out&&down_out){
-      //   break;
-      // } 
+
       if(now_up){
         up_to_down.push_back(up_check);
 
@@ -165,12 +159,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = 0;
           debugs[OUT_RANGE]=1;continue;
         }
+
         if(up_out&&(up_check>opposite_start_index)){
           up_stopped=true; continue;
         }
 
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
-        if(last_dist_up<=best_dis) { best = up_check; best_dis = last_dist_up;} //best_updated = true; notice_down_updated=false; notice_up_updated=true;
+        if(last_dist_up<=best_dis) { best = up_check; best_dis = last_dist_up;} 
 
         del_theta_up = abs(point_ang-(up_check)*incre);
         if(del_theta_up > M_PI){del_theta_up = 2*M_PI-del_theta_up;}
@@ -179,18 +174,15 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         double min_dist_up = abs(sin(del_theta_up)*point_dis);
         if(pow(min_dist_up,2)>best_dis){
           up_stopped=true; 
-          // debugs[MIN_DIST_UP]=min_dist_up; debugs[SIN_UP]=abs(sin(del_theta_up));debugs[BEST_DIST_UP]=best_dis;
-          // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
           continue;
         }
-        //if(best_updated||up_first||notice_down_updated){up_first=false;
+
         double inverse_val_up = (last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r);
         if(inverse_val_up<-1){inverse_val_up=-1;}
         else if(inverse_val_up>1){inverse_val_up=1;}
+
         up_theta_jump=acos(inverse_val_up);
           
-        //}
-
         if(up_theta_jump>0.5*M_PI){
           up_check = jump_table[up_check][UP_BIG]; up_to_down.push_back(-3);
         }else if(up_theta_jump<0.5*M_PI){
@@ -199,7 +191,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
       }
       
-      else{ // !now_up
+      else{ 
         up_to_down.push_back(down_check);
 
         if(!down_out&&(down_check < 0)){
@@ -212,7 +204,6 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         }
         
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
-        // if(last_best==-1) best_dis= old_points[down_check].distToPoint2(&trans_points[i]);
         if((last_dist_down<=best_dis)||(best==-1)) {best = down_check; best_dis = last_dist_down;}
 
         del_theta_down = abs(point_ang-(down_check)*incre);
@@ -222,17 +213,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         double min_dist_down = abs(sin(del_theta_down)*point_dis);
         if(pow(min_dist_down,2)>best_dis){
             down_stopped=true; 
-            // debugs[MIN_DIST_DOWN]=min_dist_down; debugs[SIN_DOWN]=abs(sin(del_theta_down)); debugs[BEST_DIST_DOWN]=best_dis;
-            // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
         }
-        // if(best_updated||down_first||notice_up_updated){down_first=false;
+
         double inverse_val_down = (last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r);
         if(inverse_val_down<-1){inverse_val_down=-1;}
         else if(inverse_val_down>1){inverse_val_down=1;}
         down_theta_jump=acos(inverse_val_down);
-        
-        //}
 
         if(down_theta_jump>0.5*M_PI){
           down_check = jump_table[down_check][DOWN_BIG]; up_to_down.push_back(-5);
@@ -242,9 +229,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         last_dist_down, pow(old_points[down_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_down)*old_points[down_check].r);}
       }
     }
+
+    
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
-    // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
-    // debugs[TEHTA_JUMP]=theta_jump;
     last_best = best;
     second_best = last_best-1;
     if(second_best<0){second_best=last_best+1;}
@@ -268,91 +255,26 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
         v[UP_SMALL] = j;
         break;
       }
-      // if(j==1079){
-      //   for(int k=0; k<i; ++k){
-      //     if(points[k].r<=points[i].r){
-      //       v[UP_SMALL]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i+1; j<n; ++j){
       if(points[j].r>=points[i].r){
         v[UP_BIG] = j;
         break;
       }
-      // if(j==1079){
-      //   for(int k=0; k<i; ++k){
-      //     if(points[k].r>=points[i].r){
-      //       v[UP_BIG]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i-1; j>=0; --j){
       if(points[j].r<=points[i].r){
         v[DOWN_SMALL] = j;
         break;
       }
-      // if(j==0){
-      //   for(int k=1079; k>i; --k){
-      //     if(points[k].r<points[i].r){
-      //       v[DOWN_SMALL]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i-1; j>=0; --j){
       if(points[j].r>=points[i].r){
         v[DOWN_BIG] = j;
         break;
       }
-      // if(j==0){
-      //   for(int k=1079; k>i; --k){
-      //     if(points[k].r>points[i].r){
-      //       v[DOWN_BIG]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     table.push_back(v);
   }
 }
-
-// void computeJump(vector< vector<int> >& table, vector<Point>& points){
-//   table.clear();
-//   int n = points.size();
-//   for(int i = 0; i<n; ++i){
-//     vector<int> v = {n,n,-1,-1};
-//     for(int j = i+1; j<n; ++j){
-//       if(points[j].r==points[i].r){
-//         cout<<"up_small "<<i<<"th "<<j<<endl;
-//       }
-//     }
-//     for(int j = i+1; j<n; ++j){
-//       if(points[j].r==points[i].r){
-//         cout<<"up_big "<<i<<"th "<<j<<endl;
-//       }
-//     }
-//     for(int j = i-1; j>=0; --j){
-//       if(points[j].r==points[i].r){
-//         cout<<"down_small "<<i<<"th "<<j<<endl;
-//       }
-//     }
-//     for(int j = i-1; j>=0; --j){
-//       if(points[j].r==points[i].r){
-//         cout<<"down_big "<<i<<"th "<<j<<endl;
-//       }
-//     }
-//     table.push_back(v);
-//   }
-// }
 
