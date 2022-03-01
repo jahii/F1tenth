@@ -167,7 +167,19 @@ class ScanProcessor {
             cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
             cout <<"last_index, checked indexes...: ";
             for(int b = 0; b<index_table_smart[a].size(); b++){
-              cout << index_table_smart[a][b]<<" ";
+              switch (index_table_smart[a][b]){
+                case -2:
+                  cout<<"UP_SMALL ";break;
+                case -3:
+                  cout<<"UP_BIG ";break;
+                case -4:
+                  cout<<"DOWN_SMALL ";break;
+                case -5:
+                  cout<<"DOWN_BIG ";break;
+                default :
+                  cout<<index_table_smart[a][b]<<" ";break;
+              }
+             
             }
             cout << endl;
             // printf("UP EQ : %.10f(best_dis)<%.10f={%f(min_dist_up)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_UP],debugging_table[a][MIN_DIST_UP_SQUARE],debugging_table[a][MIN_DIST_UP],debugging_table[a][UP_DELTA],debugging_table[a][SIN_UP],debugging_table[a][POINT_DIST]);
@@ -187,7 +199,19 @@ class ScanProcessor {
           }
           if(index_table_smart[a].size()>300){
             for(int b = 0; b<index_table_smart[a].size(); b++){
-              cout << index_table_smart[a][b]<<" ";
+              switch (index_table_smart[a][b]){
+                case -2:
+                  cout<<"UP_SMALL ";break;
+                case -3:
+                  cout<<"UP_BIG ";break;
+                case -4:
+                  cout<<"DOWN_SMALL ";break;
+                case -5:
+                  cout<<"DOWN_BIG ";break;
+                default :
+                  cout<<index_table_smart[a][b]<<" ";break;
+              }
+              
             }
             cout<<endl;
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
