@@ -29,6 +29,7 @@ const int MIN_DIST_DOWN_SQUARE=10;
 const int DISTANCE_TO_BEST=11;
 const int DISTANCE_TO_BEST_SEC=12;
 const int OUT_RANGE=13;
+const int TEHTA_JUMP=14;
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
@@ -105,7 +106,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
   int last_low_idx;
   int last_high_idx;
   vector <int> up_to_down;
-  vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1};
+  vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1};
 
 
   for(int i = 0; i<m; ++i){
@@ -149,7 +150,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       // ROS_INFO("now up : %s",  now_up? "true" : "false");
       // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
       // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
-
+      if(up_out&&down_out){
+        break;
+      } 
       if(now_up){
         up_to_down.push_back(up_check);
 
@@ -158,7 +161,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = 0;
           debugs[OUT_RANGE]=1;continue;
         }
-        if(up_out&&(up_check>start_index)){
+        if(up_out&&(up_check>down_check)){
           up_stopped=true; continue;
         }
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
@@ -187,7 +190,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = jump_table[up_check][UP_SMALL];
         }else{ROS_INFO("last_dist_up : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
-      }else{ // !now_up
+      }
+      
+      else{ // !now_up
         up_to_down.push_back(down_check);
 
         if(!down_out&&(down_check < 0)){
@@ -195,11 +200,13 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           down_check=1079;
           debugs[OUT_RANGE]=1;continue;
         }
-        if(down_out&&(down_check<start_index)){
+        if((down_out&&(down_check<up_check))||(down_out)&&(down_check<0)){
           down_stopped=true; continue;
         }
+        
         last_dist_down = old_points[down_check].distToPoint2(&trans_points[i]);
-        if(last_dist_down<=best_dis) {best = down_check; best_dis = last_dist_down;}
+        // if(last_best==-1) best_dis= old_points[down_check].distToPoint2(&trans_points[i]);
+        if((last_dist_down<=best_dis)||(best==-1)) {best = down_check; best_dis = last_dist_down;}
 
         del_theta_down = abs(point_ang-(down_check)*incre);
         if(del_theta_down > M_PI){del_theta_down = 2*M_PI-del_theta_down;}
@@ -227,6 +234,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
     // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
+    debugs[TEHTA_JUMP]=theta_jump;
     last_best = best;
     second_best = last_best-1;
     if(second_best<0){second_best=last_best+1;}

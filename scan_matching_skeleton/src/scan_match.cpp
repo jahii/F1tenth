@@ -45,6 +45,7 @@ const int MIN_DIST_DOWN_SQUARE=10;
 const int DISTANCE_TO_BEST=11;
 const int DISTANCE_TO_BEST_SEC=12;
 const int OUT_RANGE=13;
+const int TEHTA_JUMP=14;
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
@@ -171,7 +172,8 @@ class ScanProcessor {
             // cout << "Smart best distance : "<<debugging_table[a][DISTANCE_TO_BEST]<<endl;
             // cout << "Smart best-1 distance : "<<debugging_table[a][DISTANCE_TO_BEST_SEC]<<endl;
             cout<<"naive+1 theta: "<<debugging_table_naive[a][MIN_DIST_NAIVEPlus1]<<endl;
-            cout << "start_index : "<<start_table[a]<<endl<<endl;
+            cout << "start_index : "<<start_table[a]<<endl;
+            cout << a <<"current_theta_jump : "<<debugging_table[a][TEHTA_JUMP]<<endl<<endl;
           }
           if(index_table_smart[a].size()>300){
             for(int b = 0; b<index_table_smart[a].size(); b++){
@@ -180,6 +182,7 @@ class ScanProcessor {
             cout<<endl;
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
             cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
+
 
             cout<<endl<<endl;
           }
