@@ -1,2 +1,7 @@
 int16 naive_time
 int16 new_jumptable_time
+int16 smart_corres_time
+int32 jump_index
+int32 smart_index
+float32 ratio_jump
+float32 ratio_smart

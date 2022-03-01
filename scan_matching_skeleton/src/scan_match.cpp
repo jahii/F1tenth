@@ -29,8 +29,13 @@ const float error_per = 5.0;
 int zero_index_smart=0;
 int zero_index_naive=0;
 int before_naive_time;
-int middle_time;
+int after_naive_time;
 int after_smart_time;
+int after_jump_time;
+int naive_index;
+int jump_index;
+int smart_index;
+
 
 //Debugging index in jump-table
 const int MIN_DIST_UP=0;
@@ -142,96 +147,32 @@ class ScanProcessor {
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
         
         before_naive_time = ros::Time::now().nsec/100000;
-        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive, index_table_naive, debugging_table_naive);
-        middle_time = ros::Time::now().nsec/100000;
+        getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO);
+        after_naive_time = ros::Time::now().nsec/100000;
         
-        getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart, debugging_table,start_table);
+        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, jump_index);
+        after_jump_time = ros::Time::now().nsec/100000;
+
+        getSmartCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, smart_index);
         after_smart_time = ros::Time::now().nsec/100000;
         
-        time_msg.naive_time=middle_time-before_naive_time;
+        time_msg.naive_time=after_naive_time-before_naive_time;
         if(time_msg.naive_time<0) time_msg.naive_time+=10000;
 
-        time_msg.new_jumptable_time=after_smart_time-middle_time;
+        time_msg.new_jumptable_time=after_jump_time-after_naive_time;
         if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
-        
+
+        time_msg.smart_corres_time=after_smart_time-after_jump_time;
+        if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
+
+        time_msg.jump_index = jump_index;
+        time_msg.smart_index = smart_index;
+
+        time_msg.ratio_jump = float(jump_index/(1080*1080)*100);
+        time_msg.ratio_smart = float(smart_index/(1080*1080)*100);
+
         time_pub.publish(time_msg);
 
-        // ROS_INFO("Naive time        : %d",middle_time-before_naive_time);
-        // ROS_INFO("New_jumptable time: %d",after_smart_time-middle_time);
-
-        for(int a = 0; a<1080; a++){
-          // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-          if(((best_index_smart[a] != best_index_naive[a])&&(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]))){
-          // if(best_index_smart[a] != best_index_naive[a]){
-            cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
-            // cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
-            cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
-            cout <<"last_index, checked indexes...: ";
-            for(int b = 0; b<index_table_smart[a].size(); b++){
-              switch (index_table_smart[a][b]){
-                case -2:
-                  cout<<"UP_SMALL ";break;
-                case -3:
-                  cout<<"UP_BIG ";break;
-                case -4:
-                  cout<<"DOWN_SMALL ";break;
-                case -5:
-                  cout<<"DOWN_BIG ";break;
-                default :
-                  cout<<index_table_smart[a][b]<<" ";break;
-              }
-             
-            }
-            cout << endl;
-            // printf("UP EQ : %.10f(best_dis)<%.10f={%f(min_dist_up)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_UP],debugging_table[a][MIN_DIST_UP_SQUARE],debugging_table[a][MIN_DIST_UP],debugging_table[a][UP_DELTA],debugging_table[a][SIN_UP],debugging_table[a][POINT_DIST]);
-            // printf("DOWN EQ : %.10f(best_dis)<%.10f={%f(min_dist_down)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_DOWN],debugging_table[a][MIN_DIST_DOWN_SQUARE],debugging_table[a][MIN_DIST_DOWN],debugging_table[a][DOWN_DELTA],debugging_table[a][SIN_DOWN],debugging_table[a][POINT_DIST]);
-            printf("Naive best distance :%.30f \n",debugging_table_naive[a][MIN_DIST_NAIVE]);
-            printf("Smart best distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST]);
-            // cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
-            cout<<"point_dis: "<<transformed_points[a].r<<endl<<"naive_best+1_dis: "<<prev_points[best_index_naive[a]+1].r<<endl;
-            
-            // printf("Smart best-1 distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST_SEC]);
-            
-            // cout << "Naive best distance : "<<debugging_table_naive[a][MIN_DIST_NAIVE]<<endl;
-            // cout << "Smart best distance : "<<debugging_table[a][DISTANCE_TO_BEST]<<endl;
-            // cout << "Smart best-1 distance : "<<debugging_table[a][DISTANCE_TO_BEST_SEC]<<endl;
-            cout<<"naive+1 theta: "<<debugging_table_naive[a][MIN_DIST_NAIVEPlus1]<<endl;
-            cout << "start_index : "<<start_table[a]<<endl<<endl;
-            // cout << a <<"current_theta_jump : "<<debugging_table[a][TEHTA_JUMP]<<endl<<endl;
-          }
-          // if(index_table_smart[a].size()>1000){
-          //   for(int b = 0; b<index_table_smart[a].size(); b++){
-          //     switch (index_table_smart[a][b]){
-          //       case -2:
-          //         cout<<"UP_SMALL ";break;
-          //       case -3:
-          //         cout<<"UP_BIG ";break;
-          //       case -4:
-          //         cout<<"DOWN_SMALL ";break;
-          //       case -5:
-          //         cout<<"DOWN_BIG ";break;
-          //       default :
-          //         cout<<index_table_smart[a][b]<<" ";break;
-          //     }
-              
-          //   }
-          //   cout<<endl;
-          //   cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
-          //   cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
-
-
-          //   cout<<endl<<endl;
-          // }
-        }
-      
-        // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;
-        // cout << "10_Naive"<<corresponds_naive[100].pix << " "<< corresponds_naive[100].piy <<endl;
-        // cout << "20_N"<<corresponds_smart[200].pix << " "<< corresponds_smart[200].piy <<endl;
-        // cout << "20_Naive"<<corresponds_naive[200].pix << " "<< corresponds_naive[200].piy <<endl;
-        // cout << "30_N"<<corresponds_smart[300].pix << " "<< corresponds_smart[300].piy <<endl;
-        // cout << "30_Naive"<<corresponds_naive[300].pix << " "<< corresponds_naive[300].piy <<endl;
-        // cout << "40_N"<<corresponds_smart[400].pix << " "<< corresponds_smart[400].piy <<endl;
-        // cout << "40_Naive"<<corresponds_naive[400].pix << " "<< corresponds_naive[400].piy <<endl;
 
         prev_trans = curr_trans;
         ++count;
@@ -249,8 +190,6 @@ class ScanProcessor {
 
 
       }
-      // ROS_INFO("10th ponint is corresponding to : %f",corresponds[10].pj1);
-      // ROS_INFO("20th ponint is corresponding to : %f",corresponds[20].pj1);
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       // points_viz->addPoints(transformed_points, col);

@@ -86,13 +86,14 @@ struct Correspondence{
   }
 };
 
-void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                       vector<vector<int>>& jump_table, vector<Correspondence>& c, float prob,float incre,vector<int> &best_index_smart, 
-                       vector<vector<int>>& index_table_smart, vector<vector<double>>& debugging_table,vector<int>& start_table);
+void SmartJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
+                       vector<vector<int>>& jump_table, vector<Correspondence>& c, float prob,float incre, int& jump_index);
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,vector<int> &best_index_naive,
-                                                vector< vector<int> >&index_table_naive, vector< vector<double> >&debugging_table_naive);
+                                                vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob);
+
+void getSmartCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,int& smart_index);
 
 void computeJump(vector< vector<int> >& table, vector<Point>& points);
 
