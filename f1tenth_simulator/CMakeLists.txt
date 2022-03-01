@@ -59,6 +59,8 @@ if(DEFINED CATKIN_DEVEL_PREFIX)
     std_msgs
     message_generation
     )
+  add_message_files(FILES mux_idx.msg)
+
 
   generate_messages(
     DEPENDENCIES
