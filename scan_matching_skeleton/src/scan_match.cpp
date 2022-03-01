@@ -9,6 +9,7 @@
 #include "scan_matching_skeleton/transform.h"
 #include "scan_matching_skeleton/visualization.h"
 #include <tf/transform_broadcaster.h>
+#include "scan_matching_skeleton/time_pub.h"
 
 
 using namespace std;
@@ -17,8 +18,9 @@ const string& TOPIC_SCAN  = "/scan";
 const string& TOPIC_POS = "/scan_match_location";
 const string& TOPIC_RVIZ = "/scan_match_debug";
 const string& FRAME_POINTS = "laser";
+const string& TOPIC_TIME= "/corr_time";
 
-const float RANGE_LIMIT = 50.0; //10
+const float RANGE_LIMIT = 10.0; //10
 
 const float MAX_ITER = 30.0;
 const float MIN_INFO = 0.1;
@@ -57,6 +59,7 @@ class ScanProcessor {
     ros::Publisher pos_pub;
     ros::Publisher marker_pub;
     ros::Publisher pre_pub;
+    ros::Publisher time_pub;
 
     vector<Point> points;
     vector<Point> transformed_points;
@@ -89,8 +92,8 @@ class ScanProcessor {
     ScanProcessor(ros::NodeHandle& n) : curr_trans(Transform()) {
       pos_pub = n.advertise<geometry_msgs::PoseStamped>(TOPIC_POS, 1);
       marker_pub = n.advertise<visualization_msgs::Marker>(TOPIC_RVIZ, 1);
-
       pre_pub = n.advertise<visualization_msgs::Marker>("/scan_pub", 1);
+      time_pub= n.advertise<scan_matching_skeleton::time_pub>("/corr_time",1);
 
       points_viz = new PointVisualizer(marker_pub, "scan_match", FRAME_POINTS);
 
@@ -124,6 +127,8 @@ class ScanProcessor {
       float theta_error=0.0;
       bool icp_correct=false;
 
+      scan_matching_skeleton::time_pub time_msg;
+
       computeJump(jump_table, prev_points);
       ROS_INFO("Starting Optimization!!!");
 
@@ -136,16 +141,23 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
         
-        // before_naive_time = ros::Time::now().nsec/100000;
+        before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, best_index_naive, index_table_naive, debugging_table_naive);
-        // middle_time = ros::Time::now().nsec/100000;
+        middle_time = ros::Time::now().nsec/100000;
         
         getCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, best_index_smart, index_table_smart, debugging_table,start_table);
-        // after_smart_time = ros::Time::now().nsec/100000;
+        after_smart_time = ros::Time::now().nsec/100000;
         
+        time_msg.naive_time=middle_time-before_naive_time;
+        if(time_msg.naive_time<0) time_msg.naive_time+=10000;
 
-        // ROS_INFO("Naive time: %d",middle_time-before_naive_time);
-        // ROS_INFO("Smart time: %d",after_smart_time-middle_time);
+        time_msg.new_jumptable_time=after_smart_time-middle_time;
+        if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
+        
+        time_pub.publish(time_msg);
+
+        // ROS_INFO("Naive time        : %d",middle_time-before_naive_time);
+        // ROS_INFO("New_jumptable time: %d",after_smart_time-middle_time);
 
         for(int a = 0; a<1080; a++){
           // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
@@ -156,7 +168,19 @@ class ScanProcessor {
             cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
             cout <<"last_index, checked indexes...: ";
             for(int b = 0; b<index_table_smart[a].size(); b++){
-              cout << index_table_smart[a][b]<<" ";
+              switch (index_table_smart[a][b]){
+                case -2:
+                  cout<<"UP_SMALL ";break;
+                case -3:
+                  cout<<"UP_BIG ";break;
+                case -4:
+                  cout<<"DOWN_SMALL ";break;
+                case -5:
+                  cout<<"DOWN_BIG ";break;
+                default :
+                  cout<<index_table_smart[a][b]<<" ";break;
+              }
+             
             }
             cout << endl;
             // printf("UP EQ : %.10f(best_dis)<%.10f={%f(min_dist_up)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_UP],debugging_table[a][MIN_DIST_UP_SQUARE],debugging_table[a][MIN_DIST_UP],debugging_table[a][UP_DELTA],debugging_table[a][SIN_UP],debugging_table[a][POINT_DIST]);
@@ -177,7 +201,19 @@ class ScanProcessor {
           }
           if(index_table_smart[a].size()>300){
             for(int b = 0; b<index_table_smart[a].size(); b++){
-              cout << index_table_smart[a][b]<<" ";
+              switch (index_table_smart[a][b]){
+                case -2:
+                  cout<<"UP_SMALL ";break;
+                case -3:
+                  cout<<"UP_BIG ";break;
+                case -4:
+                  cout<<"DOWN_SMALL ";break;
+                case -5:
+                  cout<<"DOWN_BIG ";break;
+                default :
+                  cout<<index_table_smart[a][b]<<" ";break;
+              }
+              
             }
             cout<<endl;
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;

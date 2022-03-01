@@ -117,7 +117,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     int second_best = -1;
     double  point_dis = trans_points[i].r; debugs[POINT_DIST]=point_dis;
     double  point_ang = trans_points[i].theta+M_PI;
-    double theta_jump =-1;
+    double up_theta_jump =-1;
+    double down_theta_jump=-1;
 
     int start_index = int(point_ang/incre);
     start_table.push_back(start_index);
@@ -142,8 +143,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     bool down_out = false;
     bool last_best_check=false;
 
+
     while(!(up_stopped && down_stopped)){
-      
+
       // bool now_up = !up_stopped;
       bool now_up = up_stopped ? 0 :
                   down_stopped ? 1 : last_dist_up<last_dist_down;
@@ -164,8 +166,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         if(up_out&&(up_check>down_check)){
           up_stopped=true; continue;
         }
+
         last_dist_up = old_points[up_check].distToPoint2(&trans_points[i]);
-        if(last_dist_up<=best_dis) {best = up_check; best_dis = last_dist_up;} 
+        if(last_dist_up<=best_dis) { best = up_check; best_dis = last_dist_up;} //best_updated = true; notice_down_updated=false; notice_up_updated=true;
 
         del_theta_up = abs(point_ang-(up_check)*incre);
         if(del_theta_up > M_PI){del_theta_up = 2*M_PI-del_theta_up;}
@@ -178,16 +181,18 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           // debugs[UP_DELTA]=del_theta_up;debugs[MIN_DIST_UP_SQUARE]=pow(min_dist_up,2);
           continue;
         }
-        double inverse_val = (last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r);
-        if(inverse_val<-1){inverse_val=-1;}
-        else if(inverse_val>1){inverse_val=1;}
+        //if(best_updated||up_first||notice_down_updated){up_first=false;
+        double inverse_val_up = (last_dist_up+pow(old_points[up_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_up)*old_points[up_check].r);
+        if(inverse_val_up<-1){inverse_val_up=-1;}
+        else if(inverse_val_up>1){inverse_val_up=1;}
+        up_theta_jump=acos(inverse_val_up);
+          
+        //}
 
-
-        theta_jump=acos(inverse_val);
-        if(theta_jump>0.5*M_PI){
-          up_check = jump_table[up_check][UP_BIG];
-        }else if(theta_jump<0.5*M_PI){
-          up_check = jump_table[up_check][UP_SMALL];
+        if(up_theta_jump>0.5*M_PI){
+          up_check = jump_table[up_check][UP_BIG]; up_to_down.push_back(-3);
+        }else if(up_theta_jump<0.5*M_PI){
+          up_check = jump_table[up_check][UP_SMALL]; up_to_down.push_back(-2);
         }else{ROS_INFO("last_dist_up : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
       }
@@ -219,15 +224,18 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
             // debugs[DOWN_DELTA]=del_theta_down;debugs[MIN_DIST_DOWN_SQUARE]=pow(min_dist_down,2);
             continue;
         }
-        double inverse_val = (last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r);
-        if(inverse_val<-1){inverse_val=-1;}
-        else if(inverse_val>1){inverse_val=1;}
+        // if(best_updated||down_first||notice_up_updated){down_first=false;
+        double inverse_val_down = (last_dist_down+pow(old_points[down_check].r,2)-pow(point_dis,2))/(2*sqrt(last_dist_down)*old_points[down_check].r);
+        if(inverse_val_down<-1){inverse_val_down=-1;}
+        else if(inverse_val_down>1){inverse_val_down=1;}
+        down_theta_jump=acos(inverse_val_down);
+        
+        //}
 
-        theta_jump=acos(inverse_val);
-        if(theta_jump>0.5*M_PI){
-          down_check = jump_table[down_check][DOWN_BIG];
-        }else if(theta_jump<0.5*M_PI){
-          down_check = jump_table[down_check][DOWN_SMALL];
+        if(down_theta_jump>0.5*M_PI){
+          down_check = jump_table[down_check][DOWN_BIG]; up_to_down.push_back(-5);
+        }else if(down_theta_jump<0.5*M_PI){
+          down_check = jump_table[down_check][DOWN_SMALL]; up_to_down.push_back(-4);
         }else{ROS_INFO("last_dist_down : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_down, pow(old_points[down_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_down)*old_points[down_check].r);}
       }
