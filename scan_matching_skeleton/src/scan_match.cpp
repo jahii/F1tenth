@@ -196,32 +196,32 @@ class ScanProcessor {
             // cout << "Smart best distance : "<<debugging_table[a][DISTANCE_TO_BEST]<<endl;
             // cout << "Smart best-1 distance : "<<debugging_table[a][DISTANCE_TO_BEST_SEC]<<endl;
             cout<<"naive+1 theta: "<<debugging_table_naive[a][MIN_DIST_NAIVEPlus1]<<endl;
-            cout << "start_index : "<<start_table[a]<<endl;
-            cout << a <<"current_theta_jump : "<<debugging_table[a][TEHTA_JUMP]<<endl<<endl;
+            cout << "start_index : "<<start_table[a]<<endl<<endl;
+            // cout << a <<"current_theta_jump : "<<debugging_table[a][TEHTA_JUMP]<<endl<<endl;
           }
-          if(index_table_smart[a].size()>300){
-            for(int b = 0; b<index_table_smart[a].size(); b++){
-              switch (index_table_smart[a][b]){
-                case -2:
-                  cout<<"UP_SMALL ";break;
-                case -3:
-                  cout<<"UP_BIG ";break;
-                case -4:
-                  cout<<"DOWN_SMALL ";break;
-                case -5:
-                  cout<<"DOWN_BIG ";break;
-                default :
-                  cout<<index_table_smart[a][b]<<" ";break;
-              }
+          // if(index_table_smart[a].size()>1000){
+          //   for(int b = 0; b<index_table_smart[a].size(); b++){
+          //     switch (index_table_smart[a][b]){
+          //       case -2:
+          //         cout<<"UP_SMALL ";break;
+          //       case -3:
+          //         cout<<"UP_BIG ";break;
+          //       case -4:
+          //         cout<<"DOWN_SMALL ";break;
+          //       case -5:
+          //         cout<<"DOWN_BIG ";break;
+          //       default :
+          //         cout<<index_table_smart[a][b]<<" ";break;
+          //     }
               
-            }
-            cout<<endl;
-            cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
-            cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
+          //   }
+          //   cout<<endl;
+          //   cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
+          //   cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
 
 
-            cout<<endl<<endl;
-          }
+          //   cout<<endl<<endl;
+          // }
         }
       
         // cout << "10_N"<<corresponds_smart[100].pix << " "<< corresponds_smart[100].piy <<endl;

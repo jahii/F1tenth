@@ -121,6 +121,8 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     double down_theta_jump=-1;
 
     int start_index = int(point_ang/incre);
+    int opposite_start_index = start_index+540 > 1079 ? start_index-540:start_index+540;
+
     start_table.push_back(start_index);
     //int we_start_at = (last_best!=-1)? (last_best+1) : start_index; //last_best+1 
     int we_start_at = start_index; 
@@ -152,9 +154,9 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
       // ROS_INFO("now up : %s",  now_up? "true" : "false");
       // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
       // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
-      if(up_out&&down_out){
-        break;
-      } 
+      // if(up_out&&down_out){
+      //   break;
+      // } 
       if(now_up){
         up_to_down.push_back(up_check);
 
@@ -163,7 +165,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           up_check = 0;
           debugs[OUT_RANGE]=1;continue;
         }
-        if(up_out&&(up_check>down_check)){
+        if(up_out&&(up_check>opposite_start_index)){
           up_stopped=true; continue;
         }
 
@@ -205,7 +207,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           down_check=1079;
           debugs[OUT_RANGE]=1;continue;
         }
-        if((down_out&&(down_check<up_check))||(down_out)&&(down_check<0)){
+        if(down_out&&(down_check<opposite_start_index)){
           down_stopped=true; continue;
         }
         
@@ -242,7 +244,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
     }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
     // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
-    debugs[TEHTA_JUMP]=theta_jump;
+    // debugs[TEHTA_JUMP]=theta_jump;
     last_best = best;
     second_best = last_best-1;
     if(second_best<0){second_best=last_best+1;}
