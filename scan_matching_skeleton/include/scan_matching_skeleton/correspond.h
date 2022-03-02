@@ -90,12 +90,12 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
                                                 vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob);
 
 void SmartJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                       vector<vector<int>>& jump_table, vector<Correspondence>& c, float prob,float incre, int& jump_index);
+                       vector<vector<int>>& jump_table, vector<Correspondence>& c, float prob,float incre, int& jump_index, vector< vector<double>>& debugging_table_jump);
 
 void getSmartCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
                         vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre,int& smart_index);
 
 void originalJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre, int& original_index);
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre, int& original_index,vector <vector<double>>& debugging_table_original);
 
 void computeJump(vector< vector<int> >& table, vector<Point>& points);

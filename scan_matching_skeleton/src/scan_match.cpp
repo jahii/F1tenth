@@ -80,6 +80,8 @@ class ScanProcessor {
     vector< vector<int> > index_table_naive;
     vector< vector<double> > debugging_table;
     vector< vector<double> > debugging_table_naive;
+    vector< vector<double> > debugging_table_jump;
+    vector< vector<double> > debugging_table_original;
     vector<int> best_index_smart;
     vector<int> best_index_naive;
     vector<int> start_table;
@@ -150,41 +152,40 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
         
-        // before_naive_time = ros::Time::now().nsec/100000;
+        before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO);
         after_naive_time = ros::Time::now().nsec/100000;
         
-        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index);
+        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index, debugging_table_jump);
         after_jump_time = ros::Time::now().nsec/100000;
-/*
+
         getSmartCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, smart_index);
         after_smart_time = ros::Time::now().nsec/100000;
-*/
-        originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index);
+
+        originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index, debugging_table_original);
         after_original_time = ros::Time::now().nsec/100000;
         
-        // time_msg.naive_time=after_naive_time-before_naive_time;
-        // if(time_msg.naive_time<0) time_msg.naive_time+=10000;
+        time_msg.naive_time= after_naive_time - before_naive_time;
+        if(time_msg.naive_time<0) time_msg.naive_time+=10000;
 
         time_msg.new_jumptable_time=after_jump_time-after_naive_time;
         if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
 
-        // time_msg.smart_corres_time=after_smart_time-after_jump_time;
-        // if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
+        time_msg.smart_corres_time=after_smart_time-after_jump_time;
+        if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
         
-
-        time_msg.original_jump_time=after_original_time-after_naive_time;
+        time_msg.original_jump_time=after_original_time-after_smart_time;
         if(time_msg.original_jump_time<0) time_msg.original_jump_time+=10000;
-        time_msg.original_index = original_index;
 
+        time_msg.original_index = original_index;
         time_msg.jump_index = jump_index;
-        // time_msg.smart_index = smart_index;
+        time_msg.smart_index = smart_index;
 
         // time_msg.ratio_jump = float(jump_index/(1080*1080)*100);
         // time_msg.ratio_smart = float(smart_index/(1080*1080)*100);
         time_pub.publish(time_msg);
         for(int a=0;a<1080;a++){
-          if(corresponds_jump[a].pj1->r!=corresponds_original[a].pj1->r){
+          if(debugging_table_jump[a][DISTANCE_TO_BEST]!=debugging_table_original[a][DISTANCE_TO_BEST]){
             ROS_INFO("UNMATCHED!");
             cout<<corresponds_naive[a].pj1->r<<" "<<corresponds_jump[a].pj1->r<<" "<<corresponds_original[a].pj1->r<<endl;
           }
