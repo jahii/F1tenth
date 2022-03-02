@@ -32,9 +32,11 @@ int before_naive_time;
 int after_naive_time;
 int after_smart_time;
 int after_jump_time;
+int after_original_time;
 int naive_index;
 int jump_index;
 int smart_index;
+int original_index;
 
 
 //Debugging index in jump-table
@@ -71,6 +73,8 @@ class ScanProcessor {
     vector<Point> prev_points;
     vector<Correspondence> corresponds_smart;
     vector<Correspondence> corresponds_naive;
+    vector<Correspondence> corresponds_jump;
+    vector<Correspondence> corresponds_original;
     vector< vector<int> > jump_table;
     vector< vector<int> > index_table_smart;
     vector< vector<int> > index_table_naive;
@@ -146,32 +150,48 @@ class ScanProcessor {
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
         
-        before_naive_time = ros::Time::now().nsec/100000;
+        // before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO);
         after_naive_time = ros::Time::now().nsec/100000;
         
-        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, jump_index);
+        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index);
         after_jump_time = ros::Time::now().nsec/100000;
-
+/*
         getSmartCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, smart_index);
         after_smart_time = ros::Time::now().nsec/100000;
+*/
+        originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index);
+        after_original_time = ros::Time::now().nsec/100000;
         
-        time_msg.naive_time=after_naive_time-before_naive_time;
-        if(time_msg.naive_time<0) time_msg.naive_time+=10000;
+        // time_msg.naive_time=after_naive_time-before_naive_time;
+        // if(time_msg.naive_time<0) time_msg.naive_time+=10000;
 
         time_msg.new_jumptable_time=after_jump_time-after_naive_time;
         if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
 
-        time_msg.smart_corres_time=after_smart_time-after_jump_time;
-        if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
+        // time_msg.smart_corres_time=after_smart_time-after_jump_time;
+        // if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
+        
+
+        time_msg.original_jump_time=after_original_time-after_naive_time;
+        if(time_msg.original_jump_time<0) time_msg.original_jump_time+=10000;
+        time_msg.original_index = original_index;
 
         time_msg.jump_index = jump_index;
-        time_msg.smart_index = smart_index;
+        // time_msg.smart_index = smart_index;
 
-        time_msg.ratio_jump = float(jump_index/(1080*1080)*100);
-        time_msg.ratio_smart = float(smart_index/(1080*1080)*100);
-
+        // time_msg.ratio_jump = float(jump_index/(1080*1080)*100);
+        // time_msg.ratio_smart = float(smart_index/(1080*1080)*100);
         time_pub.publish(time_msg);
+        for(int a=0;a<1080;a++){
+          if(corresponds_jump[a].pj1->r!=corresponds_original[a].pj1->r){
+            ROS_INFO("UNMATCHED!");
+            cout<<corresponds_naive[a].pj1->r<<" "<<corresponds_jump[a].pj1->r<<" "<<corresponds_original[a].pj1->r<<endl;
+          }
+        }
+        
+
+
 
 
         prev_trans = curr_trans;
@@ -179,7 +199,7 @@ class ScanProcessor {
       
 
         // **************************************** We update the transforms here ******************************************* ////
-        updateTransform(corresponds_smart, curr_trans);
+        updateTransform(corresponds_original, curr_trans);
         
         x_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
         y_error = (curr_trans.x_disp-prev_trans.x_disp)/prev_trans.x_disp*100;
