@@ -148,7 +148,7 @@ class ScanProcessor {
 
         for(int a = 0; a<1080; a++){
           // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-          if(((best_index_smart[a] != best_index_naive[a])&&(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]))){
+          if(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]){
           // if(best_index_smart[a] != best_index_naive[a]){
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
             // cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
@@ -162,7 +162,7 @@ class ScanProcessor {
             // printf("DOWN EQ : %.10f(best_dis)<%.10f={%f(min_dist_down)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_DOWN],debugging_table[a][MIN_DIST_DOWN_SQUARE],debugging_table[a][MIN_DIST_DOWN],debugging_table[a][DOWN_DELTA],debugging_table[a][SIN_DOWN],debugging_table[a][POINT_DIST]);
             printf("Naive best distance :%.30f \n",debugging_table_naive[a][MIN_DIST_NAIVE]);
             printf("Smart best distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST]);
-            cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
+            // cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
             cout<<"point_dis: "<<transformed_points[a].r<<" naive_best+1_dis: "<<prev_points[best_index_naive[a]+1].r<<endl;
             
             // printf("Smart best-1 distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST_SEC]);
