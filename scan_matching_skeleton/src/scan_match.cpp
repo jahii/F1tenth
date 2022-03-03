@@ -148,7 +148,7 @@ class ScanProcessor {
 
         for(int a = 0; a<1080; a++){
           // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-          if(((best_index_smart[a] != best_index_naive[a])&&(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]))){
+          if(((best_index_smart[a] != best_index_naive[a]))){
           // if(best_index_smart[a] != best_index_naive[a]){
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
             // cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
