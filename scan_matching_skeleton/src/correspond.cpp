@@ -15,30 +15,21 @@ const int LAST_LOW_idx=1;
 const int LAST_HIGH_idx=2;
 
 //Debugging index in jump-table
-const int MIN_DIST_UP=0;
-const int MIN_DIST_DOWN=1;
-const int BEST_DIST_UP=2;
-const int BEST_DIST_DOWN=3;
-const int POINT_DIST=4;
-const int SIN_UP=5;
-const int SIN_DOWN=6;
-const int UP_DELTA=7;
-const int DOWN_DELTA=8;
-const int MIN_DIST_UP_SQUARE=9;
-const int MIN_DIST_DOWN_SQUARE=10;
-const int DISTANCE_TO_BEST=11;
-const int DISTANCE_TO_BEST_SEC=12;
-const int OUT_RANGE=13;
-const int TEHTA_JUMP=14;
+
+const int DISTANCE_TO_BEST=0;
+const int DISTANCE_TO_BEST_SEC=1;
+
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
 const int MIN_DIST_NAIVEPlus1=1;
+const int DISTANCE_TO_BEST_NAIVE=2;
 
 
 void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob){
+                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob, vector< vector<double>>& debugging_table_naive){
       c.clear();
+      debugging_table_naive.clear();
 
       int last_best = -1;
       const int n = trans_points.size();
@@ -46,9 +37,11 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
       float min_dist = 100000.00;
       int min_index = 0;
       int second_min_index = 0;
+      vector <double> debugs = {-1,-1,-1};
 
       //Do for each point
       for(int i = 0; i<n; ++i){
+        
         min_dist = 100000.00;
         for(int j = 0; j<m; ++j){
           float dist = old_points[j].distToPoint2(&trans_points[i]);
@@ -56,13 +49,15 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
             min_dist = dist;
             min_index = j;
             second_min_index = j-1;
+            debugs[DISTANCE_TO_BEST_NAIVE]=min_dist;
           }
         }
+        debugging_table_naive.push_back(debugs);
         c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[min_index], &old_points[second_min_index]));
       }
 }
 
-void SmartJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
+void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
                         vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob, float incre,int& jump_index, vector< vector<double>> &debugging_table_jump){
 
   c.clear();
@@ -78,7 +73,7 @@ void SmartJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_poi
   int last_high_idx;
   vector <int> up_to_down;
   jump_index=0;
-  vector <double> debugs={-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,-1,-1,-1};
+  vector <double> debugs={-1, -1};
 
 
   for(int i = 0; i<m; ++i){
@@ -208,115 +203,6 @@ void SmartJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_poi
     c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
   
   }
-}
-
-
-
-void getSmartCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
-                        vector< vector<int> >& jump_table, vector<Correspondence>& c, float prob,float incre, int& smart_index){
-  c.clear();
-
-  int last_best = -1;
-  double prev_point_ang=-1.0;
-  const int m = trans_points.size();
-  const int n = old_points.size();
-  int last_low_idx;
-  int last_high_idx;
-  smart_index = 0;
-  vector <int> up_to_down;
-
-  //angle_incre:0.005823
-  //Do for each point
-  for(int i = 0; i<m; ++i){
-    double best_dis = 10000000.00;
-    int best = -1;
-    int second_best = -1;
-
-    if(last_best == -1){      //when i=0
-      for(int j=0;j<n; ++j){
-        double dis = old_points[j].distToPoint2(&trans_points[i]);
-        if(dis<best_dis){
-          best_dis = dis;
-          best = j;
-          second_best = j-1;
-          if(second_best == -1){
-            second_best = 1;
-          }
-          last_best = best;
-        }
-      }
-    }
-
-    else{
-      
-      double  point_dis = trans_points[i].r;
-      double  point_ang = trans_points[i].theta+M_PI;
-      
-      double  last_best_dis = old_points[last_best].distToPoint(&trans_points[i]);
-      double  last_angle = 0;
-      
-      if (point_dis*point_dis - last_best_dis*last_best_dis > 0){
-        last_angle =  atan2(last_best_dis, sqrt(point_dis*point_dis - last_best_dis*last_best_dis));
-        last_low_idx = int((point_ang - last_angle)/incre)-2; //start angle = -3.1415~
-        last_high_idx = int((point_ang + last_angle)/incre)+2;
-      }
-
-      else{
-        last_angle = M_PI;//3.1415926
-        last_low_idx = int((point_ang - last_angle)/incre); //start angle = -3.1415~
-        last_high_idx = int((point_ang + last_angle)/incre);
-      }
-      smart_index += last_high_idx-last_low_idx;
-      
-      if(last_low_idx<0) last_low_idx += 1080;
-      if(last_high_idx>=n) last_high_idx -=1080;
-
-      double last_low_dis =old_points[last_low_idx].distToPoint(&trans_points[i]);
-      
-      double dis = 0;
-      if(last_high_idx>last_low_idx){ 
-        for(int j=last_low_idx; j<=last_high_idx; ++j){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-          }
-        }
-      }
-      
-      else{
-        for(int j=0;j<=last_high_idx;++j){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-            }
-        } 
-        
-        for(int j=last_low_idx;j<1080;++j){
-          dis= old_points[j].distToPoint2(&trans_points[i]);
-          if(dis<best_dis){
-            best_dis=dis;
-            best=j;
-            second_best=j-1;
-            if(second_best==-1) second_best=1;
-            last_best=best;
-            }
-        }  
-      
-      }
-    
-    }
-
-    c.push_back(Correspondence(&trans_points[i], &points[i], &old_points[best], &old_points[second_best]));
-  }
-
 }
 
 void originalJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, vector<Point>& points,
