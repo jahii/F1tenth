@@ -40,22 +40,10 @@ int original_index;
 
 
 //Debugging index in jump-table
-const int START_INDEX=0;
-const int OPPOSITE_START_INDEX=1;
-const int BEST_DIST_UP=2;
-const int BEST_DIST_DOWN=3;
-const int POINT_DIST=4;
-const int SIN_UP=5;
-const int SIN_DOWN=6;
-const int UP_DELTA=7;
-const int DOWN_DELTA=8;
-const int MIN_DIST_UP_SQUARE=9;
-const int MIN_DIST_DOWN_SQUARE=10;
-const int DISTANCE_TO_BEST=11;
-const int DISTANCE_TO_BEST_SEC=12;
-const int OUT_RANGE=13;
-const int TEHTA_JUMP=14;
-const int MIN_INDEX_JUMP = 15;
+const int DISTANCE_TO_BEST=0;
+const int BEST_INDEX = 1;
+const int START_INDEX = 2;
+const int OPPOSITE_START_INDEX = 3;
 
 //Debugging index in naive
 const int MIN_DIST_NAIVE=0;
@@ -133,7 +121,6 @@ class ScanProcessor {
       // points_viz->addPoints(prev_points, col);
       // points_viz->publishPoints();
 
-
       int count = 0;
       float x_error=0.0;
       float y_error=0.0;
@@ -147,24 +134,9 @@ class ScanProcessor {
 
       curr_trans = Transform();
 
-      // transformed_points.push_back(curr_trans.apply(points[0]));
-      // ROS_INFO("points[0]'s r: %f , theta : %f", points[0].r,points[0].theta);
-      // ROS_INFO("transformed points[0]'s r: %f , theta : %f",transformed_points[0].r,transformed_points[0].theta);
-
-      // for(int i=0;i<points.size();i++){
-      //     if(isnan(transformed_points[i].r)) ROS_INFO(" %dth transformed point's r is nan");
-      //     if(isnan(transformed_points[i].theta)) ROS_INFO(" %dth transformed point's theta is nan");
-      //   }
-
-      // while(true) ros::Duration(1).sleep();
       while (count < MAX_ITER && ( icp_correct==false || count==0)) {
         
         transformPoints(points, curr_trans, transformed_points);
-
-        // for(int i=0;i<points.size();i++){
-        //   if(isnan(transformed_points[i].r)) ROS_INFO(" %dth transformed point's r is nan");
-        //   if(isnan(transformed_points[i].theta)) ROS_INFO(" %dth transformed point's theta is nan");
-        // }
 
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
         // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
@@ -172,74 +144,42 @@ class ScanProcessor {
         before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, debugging_table_naive);
         after_naive_time = ros::Time::now().nsec/100000;
-        
-        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index, debugging_table_jump,msg->angle_min,msg->angle_max,index_table_smart);
+        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index, debugging_table_jump,msg->angle_min,msg->angle_max);
         after_jump_time = ros::Time::now().nsec/100000;
+        originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index, debugging_table_original,msg->angle_min,msg->angle_max);
+        after_original_time = ros::Time::now().nsec/100000;
 
-        getSmartCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_smart, A*count*count+MIN_INFO,msg->angle_increment, smart_index,msg->angle_min,msg->angle_max);
-        after_smart_time = ros::Time::now().nsec/100000;
-
-        // originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index, debugging_table_original,msg->angle_min,msg->angle_max);
-        // after_original_time = ros::Time::now().nsec/100000;
-        
         time_msg.naive_time= after_naive_time - before_naive_time;
         if(time_msg.naive_time<0) time_msg.naive_time+=10000;
 
         time_msg.new_jumptable_time=after_jump_time-after_naive_time;
         if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
 
-        time_msg.smart_corres_time=after_smart_time-after_jump_time;
-        if(time_msg.smart_corres_time<0) time_msg.smart_corres_time+=10000;
-        
-        // time_msg.original_jump_time=after_original_time-after_smart_time;
+        // time_msg.original_jump_time=after_original_time-after_jump_time;
         // if(time_msg.original_jump_time<0) time_msg.original_jump_time+=10000;
-
-        // time_msg.original_index = original_index;
-        time_msg.jump_index = jump_index;
-        time_msg.smart_index = smart_index;
-
-        // time_msg.ratio_jump = float(jump_index/(1080*1080)*100);
-        // time_msg.ratio_smart = float(smart_index/(1080*1080)*100);
         
+        time_msg.jump_index = jump_index;
+
         time_pub.publish(time_msg);
-        // ROS_INFO("PUBLISHING");
 
-
-        for(int a=0;a<1081;a++){
-          // if(debugging_table_jump[a][DISTANCE_TO_BEST]!=debugging_table_naive[a][MIN_DIST_NAIVE]){
-          //   ROS_INFO("UNMATCHED!");
-          //   // cout<<corresponds_naive[a].pj1->r<<" "<<corresponds_jump[a].pj1->r<<" "<<corresponds_original[a].pj1->r<<endl;
-          //   cout<<corresponds_naive[a].pj1->r<<" "<<corresponds_jump[a].pj1->r<<" "<<endl;
-            
-          // }
-          if (corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1) != corresponds_smart[a].p->distToPoint2(corresponds_smart[a].pj1) ? 0 : corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1) != corresponds_smart[a].p->distToPoint2(corresponds_smart[a].pj1) ? 1 : 0)
+        for(int a=0;a<transformed_points.size();a++){
+          double dist2best_naive = corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1);
+          double dist2best_jump = corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1);
+          double dist2best_original = corresponds_original[a].p->distToPoint2(corresponds_original[a].pj1);
+          /*compare naive and jump
+          if (dist2best_naive != dist2best_jump)
           {
             ROS_INFO("%d th points unmatched!!", a);
-            cout << "naive : " << corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1) << " smart : " << corresponds_smart[a].p->distToPoint2(corresponds_smart[a].pj1) << " jump : " << corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1) << endl;
-            cout << "naive min index: " << debugging_table_naive[a][MIN_INDEX_NAVIE] << " jump min index : " << debugging_table_jump[a][MIN_INDEX_JUMP] << endl;
-            cout << "jump start index : " << debugging_table_jump[a][START_INDEX] << " opposite start index : " << debugging_table_jump[a][OPPOSITE_START_INDEX] << endl;
-            for (int b = 0; b < index_table_smart[a].size(); b++)
-            {
-              switch (index_table_smart[a][b])
-              {
-              case -2:
-                cout << "UP_SMALL ";
-                break;
-              case -3:
-                cout << "UP_BIG ";
-                break;
-              case -4:
-                cout << "DOWN_SMALL ";
-                break;
-              case -5:
-                cout << "DOWN_BIG ";
-                break;
-              default:
-                cout << index_table_smart[a][b] << " ";
-                break;
-              }
-
-            }
+            cout << "naive : " << corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1) << " jump : " << corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1) << endl;
+            cout << "naive min index : " << debugging_table_naive[a][MIN_INDEX_NAVIE] << " jump min index : " << debugging_table_jump[a][BEST_INDEX] << endl;
+            cout<<endl;
+          }
+          */
+          if((dist2best_naive != dist2best_jump)||(dist2best_jump!=dist2best_original))
+          {
+            ROS_INFO("%d th points unmatched!!", a);
+            cout << "naive : " << dist2best_naive << " jump : " << dist2best_jump <<" original : " << dist2best_original << endl;
+            cout << "naive best index : " << debugging_table_naive[a][MIN_INDEX_NAVIE] << " jump best index : " << debugging_table_jump[a][BEST_INDEX] <<" orignal best index : " << debugging_table_original[a][BEST_INDEX] << endl;
             cout<<endl<<endl;
           }
         }
@@ -257,8 +197,6 @@ class ScanProcessor {
 
         if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
         
-
-
       }
       
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
