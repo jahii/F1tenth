@@ -172,7 +172,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
         up_to_down.push_back(down_check);
         if(!down_out&&(down_check < 0)){
           down_out=true;
-          down_check=1079;
+          down_check=n-1;
           debugs[OUT_RANGE]=1;continue;}
         if(down_out&&(down_check<=(we_start_at+1))){
           down_stopped=true; continue;}
@@ -199,7 +199,7 @@ void getCorrespondence(vector<Point>& old_points, vector<Point>& trans_points, v
           down_check--;
         }
       }
-      }
+    }
     debugs[DISTANCE_TO_BEST]=old_points[best].distToPoint2(&trans_points[i]);
     // debugs[DISTANCE_TO_BEST_SEC]=old_points[best-1].distToPoint2(&trans_points[i]);
     last_best = best;
@@ -225,60 +225,24 @@ void computeJump(vector< vector<int> >& table, vector<Point>& points){
         v[UP_SMALL] = j;
         break;
       }
-      // if(j==1079){
-      //   for(int k=0; k<i; ++k){
-      //     if(points[k].r<=points[i].r){
-      //       v[UP_SMALL]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i+1; j<n; ++j){
       if(points[j].r>=points[i].r){
         v[UP_BIG] = j;
         break;
       }
-      // if(j==1079){
-      //   for(int k=0; k<i; ++k){
-      //     if(points[k].r>=points[i].r){
-      //       v[UP_BIG]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i-1; j>=0; --j){
       if(points[j].r<=points[i].r){
         v[DOWN_SMALL] = j;
         break;
       }
-      // if(j==0){
-      //   for(int k=1079; k>i; --k){
-      //     if(points[k].r<points[i].r){
-      //       v[DOWN_SMALL]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     for(int j = i-1; j>=0; --j){
       if(points[j].r>=points[i].r){
         v[DOWN_BIG] = j;
         break;
       }
-      // if(j==0){
-      //   for(int k=1079; k>i; --k){
-      //     if(points[k].r>points[i].r){
-      //       v[DOWN_BIG]=k;
-      //       break;
-      //     }
-      //   }
-        
-      // }
     }
     table.push_back(v);
   }

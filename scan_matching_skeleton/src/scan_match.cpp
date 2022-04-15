@@ -146,23 +146,23 @@ class ScanProcessor {
         // ROS_INFO("Naive time: %d",middle_time-before_naive_time);
         // ROS_INFO("Smart time: %d",after_smart_time-middle_time);
 
-        for(int a = 0; a<1080; a++){
+        for(int a = 0; a<transformed_points.size(); a++){
           // if(!((corresponds_smart[a].p1x==corresponds_naive[a].p1x)&&(corresponds_smart[a].p1y==corresponds_naive[a].p1y))){
-          if(((best_index_smart[a] != best_index_naive[a])&&(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]))){
-          // if(best_index_smart[a] != best_index_naive[a]){
+          // if(((best_index_smart[a] != best_index_naive[a])&&(debugging_table_naive[a][MIN_DIST_NAIVE]!=debugging_table[a][DISTANCE_TO_BEST]))){
+          if((best_index_smart[a] != best_index_naive[a])&&(abs(best_index_smart[a]-best_index_naive[a])!=1079)){
             cout << a <<"_Smart index : " << best_index_smart[a] << " values : "<<corresponds_smart[a].p1x<<" "<<corresponds_smart[a].p1y<<endl;
             // cout << "last_best : " << index_table_smart[a][0] << " low_index : "<<index_table_smart[a][1] <<" high_index : "<<index_table_smart[a][2] <<endl; 
             cout << a <<"_Naive index : " << best_index_naive[a] << " values : "<<corresponds_naive[a].p1x<<" "<<corresponds_naive[a].p1y<<endl;
             cout <<"last_index, checked indexes...: ";
-            for(int b = 0; b<index_table_smart[a].size(); b++){
-              cout << index_table_smart[a][b]<<" ";
-            }
+            // for(int b = 0; b<index_table_smart[a].size(); b++){
+            //   cout << index_table_smart[a][b]<<" ";
+            // }
             cout << endl;
             // printf("UP EQ : %.10f(best_dis)<%.10f={%f(min_dist_up)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_UP],debugging_table[a][MIN_DIST_UP_SQUARE],debugging_table[a][MIN_DIST_UP],debugging_table[a][UP_DELTA],debugging_table[a][SIN_UP],debugging_table[a][POINT_DIST]);
             // printf("DOWN EQ : %.10f(best_dis)<%.10f={%f(min_dist_down)={sin(%f)=%f}*%f(point_dist)}^2\n", debugging_table[a][BEST_DIST_DOWN],debugging_table[a][MIN_DIST_DOWN_SQUARE],debugging_table[a][MIN_DIST_DOWN],debugging_table[a][DOWN_DELTA],debugging_table[a][SIN_DOWN],debugging_table[a][POINT_DIST]);
             printf("Naive best distance :%.30f \n",debugging_table_naive[a][MIN_DIST_NAIVE]);
             printf("Smart best distance :%.30f \n",debugging_table[a][DISTANCE_TO_BEST]);
-            cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
+            // cout<<"naive_best+1th jump_table "<<jump_table[best_index_naive[a]+1][0]<<"   "<<jump_table[best_index_naive[a]+1][1]<<"  "<<jump_table[best_index_naive[a]+1][2]<<"  "<<jump_table[best_index_naive[a]+1][3]<<endl;
             cout<<"point_dis: "<<transformed_points[a].r<<" naive_best+1_dis: "<<prev_points[best_index_naive[a]+1].r<<endl;
             cout<<"naive_best_dis: "<<prev_points[best_index_naive[a]].r<<endl;
             cout<<"naive_best-1_dis: "<<prev_points[best_index_naive[a]-1].r<<endl;
