@@ -144,7 +144,7 @@ class ScanProcessor {
         before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, debugging_table_naive);
         after_naive_time = ros::Time::now().nsec/100000;
-        SmartJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index, debugging_table_jump,msg->angle_min,msg->angle_max);
+        OurJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_jump, A*count*count+MIN_INFO,msg->angle_increment, jump_index, debugging_table_jump,msg->angle_min,msg->angle_max);
         after_jump_time = ros::Time::now().nsec/100000;
         originalJumpCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_original, A*count*count+MIN_INFO,msg->angle_increment, original_index, debugging_table_original,msg->angle_min,msg->angle_max);
         after_original_time = ros::Time::now().nsec/100000;
@@ -155,8 +155,8 @@ class ScanProcessor {
         time_msg.new_jumptable_time=after_jump_time-after_naive_time;
         if(time_msg.new_jumptable_time<0) time_msg.new_jumptable_time+=10000;
 
-        // time_msg.original_jump_time=after_original_time-after_jump_time;
-        // if(time_msg.original_jump_time<0) time_msg.original_jump_time+=10000;
+        time_msg.original_jump_time=after_original_time-after_jump_time;
+        if(time_msg.original_jump_time<0) time_msg.original_jump_time+=10000;
         
         time_msg.jump_index = jump_index;
 
@@ -166,7 +166,7 @@ class ScanProcessor {
           double dist2best_naive = corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1);
           double dist2best_jump = corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1);
           double dist2best_original = corresponds_original[a].p->distToPoint2(corresponds_original[a].pj1);
-          //compare naive and jump
+          //compare naive and our_jump algorithm
           /*  
           if (dist2best_naive != dist2best_jump)
           {
