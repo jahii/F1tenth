@@ -166,7 +166,8 @@ class ScanProcessor {
           double dist2best_naive = corresponds_naive[a].p->distToPoint2(corresponds_naive[a].pj1);
           double dist2best_jump = corresponds_jump[a].p->distToPoint2(corresponds_jump[a].pj1);
           double dist2best_original = corresponds_original[a].p->distToPoint2(corresponds_original[a].pj1);
-          /*compare naive and jump
+          //compare naive and jump
+          /*  
           if (dist2best_naive != dist2best_jump)
           {
             ROS_INFO("%d th points unmatched!!", a);
