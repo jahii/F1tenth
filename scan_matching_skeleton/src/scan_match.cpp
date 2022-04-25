@@ -139,7 +139,7 @@ class ScanProcessor {
         transformPoints(points, curr_trans, transformed_points);
 
         //************************************************ Find correspondence between points of the current and previous frames  *************** ////
-        // **************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
+        //**************************************************** getCorrespondence() function is the fast search function and getNaiveCorrespondence function is the naive search option **** ////
         
         before_naive_time = ros::Time::now().nsec/100000;
         getNaiveCorrespondence(prev_points, transformed_points, points, jump_table, corresponds_naive, A*count*count+MIN_INFO, debugging_table_naive);
@@ -173,8 +173,6 @@ class ScanProcessor {
 
         prev_trans = curr_trans;
         ++count;
-      
-
         // **************************************** We update the transforms here ******************************************* ////
         updateTransform(corresponds_original, curr_trans);
         
@@ -184,15 +182,12 @@ class ScanProcessor {
 
         if (abs(x_error)<=error_per&&abs(y_error)<=error_per&&abs(theta_error)<=error_per) icp_correct=true;
         
-
-
       }
 
       col.r = 0.0; col.b = 0.0; col.g = 1.0; col.a = 1.0;
       // points_viz->addPoints(transformed_points, col);
       // points_viz->publishPoints();
       
-
       ROS_INFO("Count: %i", count);
       ROS_INFO("x_error :%f", x_error);
 

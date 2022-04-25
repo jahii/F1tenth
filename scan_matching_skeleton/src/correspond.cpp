@@ -31,7 +31,6 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
       c.clear();
       debugging_table_naive.clear();
 
-      int last_best = -1;
       const int n = trans_points.size();
       const int m = old_points.size();
       float min_dist = 100000.00;
@@ -41,7 +40,6 @@ void getNaiveCorrespondence(vector<Point>& old_points, vector<Point>& trans_poin
 
       //Do for each point
       for(int i = 0; i<n; ++i){
-        
         min_dist = 100000.00;
         for(int j = 0; j<m; ++j){
           float dist = old_points[j].distToPoint2(&trans_points[i]);
@@ -71,13 +69,11 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
   const int n = old_points.size();
   int last_low_idx;
   int last_high_idx;
-  vector <int> up_to_down;
   jump_index=0;
   vector <double> debugs={-1, -1};
 
 
   for(int i = 0; i<m; ++i){
-    up_to_down.clear();
     double best_dis = old_points[last_best].distToPoint2(&trans_points[i]);
     int best = -1;
     int second_best = -1;
@@ -89,7 +85,7 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
     int start_index = int(point_ang/incre);
     int opposite_start_index = start_index+540 > 1079 ? start_index-540:start_index+540;
 
-    int we_start_at = start_index; 
+    int we_start_at = start_index;
 
     int up_check = we_start_at+1;
     int down_check = we_start_at;
@@ -97,11 +93,10 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
 
     double last_dist_up = -1;
     double last_dist_down = -2;
-    double del_theta_down = -1;
     double del_theta_up=-1;
+    double del_theta_down = -1;
 
     bool up_stopped=false, down_stopped=false;
-    up_to_down.push_back(last_best);
     int count = 0;
     bool up_out = false;
     bool down_out = false;
@@ -116,9 +111,7 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
       bool now_up = up_stopped ? 0 :
                   down_stopped ? 1 : last_dist_up<last_dist_down;
 
-      if(now_up){
-        up_to_down.push_back(up_check);
-        
+      if(now_up){       
 
         if(!up_out&&(up_check >= n)){
           up_out = true;
@@ -148,16 +141,14 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
         up_theta_jump=acos(inverse_val_up);
 
         if(up_theta_jump>0.5*M_PI){
-          up_check = jump_table[up_check][UP_BIG]; up_to_down.push_back(-3);
+          up_check = jump_table[up_check][UP_BIG];
         }else if(up_theta_jump<0.5*M_PI){
-          up_check = jump_table[up_check][UP_SMALL]; up_to_down.push_back(-2);
+          up_check = jump_table[up_check][UP_SMALL];
         }else{ROS_INFO("last_dist_up : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_up, pow(old_points[up_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_up)*old_points[up_check].r);}
       }
       
       else{ // !now_up
-        up_to_down.push_back(down_check);
-
         if(!down_out&&(down_check < 0)){
           down_out=true;
           down_check=1079;
@@ -185,9 +176,9 @@ void OurJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_point
         down_theta_jump=acos(inverse_val_down);
         
         if(down_theta_jump>0.5*M_PI){
-          down_check = jump_table[down_check][DOWN_BIG]; up_to_down.push_back(-5);
+          down_check = jump_table[down_check][DOWN_BIG];
         }else if(down_theta_jump<0.5*M_PI){
-          down_check = jump_table[down_check][DOWN_SMALL]; up_to_down.push_back(-4);
+          down_check = jump_table[down_check][DOWN_SMALL];
         }else{ROS_INFO("last_dist_down : %f, 0tochecking point^2 : %f, point_dis^2 : %f, 2*a*b : %f", 
         last_dist_down, pow(old_points[down_check].r,2),pow(point_dis,2), 2*sqrt(last_dist_down)*old_points[down_check].r);}
       }
@@ -244,7 +235,6 @@ void originalJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_
     double del_theta_down;
 
     bool up_stopped=false, down_stopped=false;
-    // ROS_INFO("%dth scan",i);
     int count = 0;
     bool up_out = false;
     bool down_out = false;
@@ -254,12 +244,9 @@ void originalJumpCorrespondence(vector<Point>& old_points, vector<Point>& trans_
 
       original_index++;
       
-      // bool now_up = !up_stopped;
       bool now_up = up_stopped ? 0 :
                   down_stopped ? 1 : last_dist_up<last_dist_down;
-      // ROS_INFO("now up : %s",  now_up? "true" : "false");
-      // ROS_INFO("up_stopped : %s",up_stopped? "true" : "false");
-      // ROS_INFO("down_stopped : %s",down_stopped? "true" : "false");
+
 
       if(now_up){
         
